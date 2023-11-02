@@ -68,7 +68,7 @@ GameMap* initialize_game(const char* map_filename) {
     }
 
     for (int i = 0; i < size; i++) {
-        gameMap->grid[i] = malloc((size + 1) * sizeof(char)); // +1 for null terminator
+        gameMap->grid[i] = malloc((size + 2) * sizeof(char)); // +1 for new line and null terminator
         if (gameMap->grid[i] == NULL) {
             // Handle error, free previously allocated memory
             for (int j = 0; j < i; j++) {
@@ -84,12 +84,22 @@ GameMap* initialize_game(const char* map_filename) {
     // Read the map from the file
     char lineBuffer[size + 2]; // +2 for newline and null terminator
     for (int i = 0; i < size && fgets(lineBuffer, sizeof(lineBuffer), fp) != NULL; i++) {
-        strncpy(gameMap->grid[i], lineBuffer, size);
-        gameMap->grid[i][size] = '\0'; // Ensure null termination
+        strncpy(gameMap->grid[i], lineBuffer, size+2);
+        gameMap->grid[i][size] = '\n'; // Ensure null termination
+        gameMap->grid[i][size+1] = '\0'; // Ensure null termination
     }
 
     fclose(fp);
     return gameMap;
+}
+
+bool handle_player_join(void* arg, const addr_t from, const char* buf) {
+    // This handler will be called when a 'join' message is received.
+
+    printf("joined @: %s", message_stringAddr(from));
+
+    // Return true if the message loop should continue, false if it should terminate.
+    return true;
 }
 
 
@@ -115,11 +125,11 @@ int main(int argc, char* argv[]) {
 
     for (int i = 0; i < game_map->mapSize; i++) {
         printf("%s", game_map->grid[i]);
+        // printf("%d", game_map->mapSize);
     }
     
     // Start the message loop, passing in handlers for different message types
-    // message_loop(game_map, 0, NULL, NULL, handle_player_join);
-    message_loop(game_map, 0, NULL, NULL, NULL);
+    message_loop(game_map, 0, NULL, NULL, handle_player_join);
 
     // Cleanup
     message_done();
