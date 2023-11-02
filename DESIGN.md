@@ -90,20 +90,6 @@ DISPLAY\[map known to client]
 * parse_map: Reads the map file and sets up the data structures with it.
 * game_over: Cleanup, free memory, and exit
 
-### Pseudo code for logic/algorithmic flow
-
-The server will run as follows:
-
-	execute from a command line per the requirement spec
-	parse the command line, validate parameters
-	call initializeGame() to set up data structures
-	initialize the 'message' module
-	print the port number on which we wait
-	call message_loop(), to await clients
-	call gameOver() to inform all clients the game has ended
-	clean up
-
-
 ### Major data structures
 
 ### 1. Player
@@ -136,3 +122,52 @@ The `GameMap` struct provides a holistic view of the game's world and contains:
 The `Message` struct is used for communication between the client and the server. It contains:
 - **MessageType (Enum)**: Enumerated values like PLAY, SPECTATE, KEY, GRID, GOLD, DISPLAY, QUIT, ERROR that specify the kind of message or command being sent or received.
 - **Content (String)**: The main content or payload of the message. Depending on the MessageType, it could contain player actions, game state updates, error messages, etc.
+
+### Server Design
+The server will run as follows:
+```plaintext
+Load and validate the provided map file.
+Initialize game state based on constants such as GoldTotal and MaxPlayers.
+Manage incoming messages from clients (players and spectators).
+Maintain an active player list and a single active spectator.
+Broadcast game updates to all clients after any significant game event.
+Conclude the game once all gold is collected and notify clients of the results.
+```
+
+### Client Design
+```plaintext
+Establish communication with the server.
+Render the game display using received data.
+Process user inputs and send actions to the server.
+Update the display based on feedback from the server.
+Allow users to participate as players or join as spectators.
+```
+
+### Network Protocol
+Rely on UDP/IP for communication.
+Strictly adhere to the prescribed message format.
+### Maps
+Represent maps as 2D grids, using defined characters for walls, passages, rooms, and players.
+Apply provided visibility logic to determine map visibility for each player.
+### Error Handling
+Both server and client should handle errors gracefully.
+If there's an unexpected message or error, the server can send an ERROR message to the client, prompting the client to display the error to the user.
+## Implementation Strategy
+- **Initialization**:
+Jack will start with server setup, map loading, and game state initialization.
+Sajjad will handle client setup, server communication, and basic rendering.
+- **Core Gameplay Loop**:
+Jack will create server logic to manage player movements, gold collection, and game end conditions.
+Sajjad will oversee the client-side game loop, user input capture, and display updates.
+- **Networking**:
+Emmanuel will establish UDP communication protocol, ensuring correct message transmission between server and clients.
+- **Error Handling and Edge Cases**:
+All developers will collaboratively address potential errors, from malformed messages to unexpected user inputs.
+- **Testing and Refinement**:
+The team will test the game under various scenarios, simulating different player counts, network conditions, and user inputs to ensure robustness.
+- **Final Integration**:
+Developers will combine all modules and features to ensure smooth communication and gameplay.
+- **Documentation**:
+All functions, structs, and modules will be documented for future reference and maintenance.
+## Conclusion
+This design outlines a structured approach to developing the "Nuggets" game. By distributing tasks among team members and segmenting the game into manageable modules, our team can efficiently develop, test, and refine the game. This approach guarantees an optimal user experience.
