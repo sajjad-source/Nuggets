@@ -21,25 +21,109 @@ typedef struct {
     char** grid;
     GoldPile* gold_piles;
     Player* players;
+    int mapSize;
 } GameMap;
 
+// Function declarations
+GameMap* load_map(const char* map_filename);
+GameMap* initialize_game(const char* map_filename);
+bool handle_player_join(void* arg, const addr_t from, const char* buf);
+bool handle_player_quit(void* arg, const addr_t from, const char* buf);
+bool handle_player_move(void* arg, const addr_t from, const char* buf);
 
-void server_handle() {
-    // TODO: Handle messages and game logic
+GameMap* initialize_game(const char* map_filename) {
+    // Open the map file
+    FILE* fp = fopen(map_filename, "r");
+    if (fp == NULL) {
+        perror("Error opening map file");
+        return NULL;
+    }
+
+    // Assuming the map is always square, count the number of characters until a newline
+    int size = 0; // This will be the size for both rows and columns
+    while (fgetc(fp) != '\n') {
+        size++;
+    }
+
+    // Rewind to the start of the file to read the grid
+    rewind(fp);
+
+    // Allocate memory for the GameMap structure
+    GameMap* gameMap = malloc(sizeof(GameMap));
+    if (gameMap == NULL) {
+        perror("Error allocating memory for game map");
+        fclose(fp);
+        return NULL;
+    }
+
+    gameMap->mapSize = size;
+
+    // Allocate memory for the grid
+    gameMap->grid = malloc(size * sizeof(char*));
+    if (gameMap->grid == NULL) {
+        perror("Error allocating memory for grid");
+        free(gameMap);
+        fclose(fp);
+        return NULL;
+    }
+
+    for (int i = 0; i < size; i++) {
+        gameMap->grid[i] = malloc((size + 1) * sizeof(char)); // +1 for null terminator
+        if (gameMap->grid[i] == NULL) {
+            // Handle error, free previously allocated memory
+            for (int j = 0; j < i; j++) {
+                free(gameMap->grid[j]);
+            }
+            free(gameMap->grid);
+            free(gameMap);
+            fclose(fp);
+            return NULL;
+        }
+    }
+
+    // Read the map from the file
+    char lineBuffer[size + 2]; // +2 for newline and null terminator
+    for (int i = 0; i < size && fgets(lineBuffer, sizeof(lineBuffer), fp) != NULL; i++) {
+        strncpy(gameMap->grid[i], lineBuffer, size);
+        gameMap->grid[i][size] = '\0'; // Ensure null termination
+    }
+
+    fclose(fp);
+    return gameMap;
 }
+
 
 int main(int argc, char* argv[]) {
     if (argc < 2) {
         printf("Usage: ./server <map_filename>\n");
         return 1;
     }
-    message_init(stderr);
-    while (message_loop(NULL, 0, NULL, NULL, NULL)) {
-        printf("test");
+    
+    // Initialize the messaging system and start listening on a port
+    int port = message_init(stderr);
+    if (port == 0) {
+        fprintf(stderr, "Failed to initialize messaging system.\n");
+        return 1;
     }
 
+    // Load the game map and initialize the game state
+    GameMap* game_map = initialize_game(argv[1]);
+    if (game_map == NULL) {
+        fprintf(stderr, "Failed to initialize game.\n");
+        return 1;
+    }
+
+    for (int i = 0; i < game_map->mapSize; i++) {
+        printf("%s", game_map->grid[i]);
+    }
+    
+    // Start the message loop, passing in handlers for different message types
+    // message_loop(game_map, 0, NULL, NULL, handle_player_join);
+    message_loop(game_map, 0, NULL, NULL, NULL);
+
+    // Cleanup
     message_done();
 
-
+    free(game_map);
     return 0;
 }
