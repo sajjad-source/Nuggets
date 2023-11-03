@@ -3,3 +3,6 @@ miniclient
 messagetest
 *.log
 *.gch
+-lncurses
+client
+server
