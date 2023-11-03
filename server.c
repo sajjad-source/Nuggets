@@ -23,6 +23,7 @@ typedef struct {
     GoldPile* gold_piles;
     Player* players;
     int mapSize;
+    int emptySpaceCount;
     Empty* emptySpaces;
     Player* players[26];
     int mapSize;
@@ -44,6 +45,7 @@ GameMap* initialize_game(const char* map_filename);
 bool handle_player_join(void* arg, const addr_t from, const char* buf);
 bool handle_player_quit(void* arg, const addr_t from, const char* buf);
 bool handle_player_move(void* arg, const addr_t from, const char* buf);
+
 
 GameMap* initialize_game(const char* map_filename) {
     // Open the map file
@@ -96,16 +98,16 @@ GameMap* initialize_game(const char* map_filename) {
     }
 
     // Read the map from the file
-    char lineBuffer[size + 2];              // +2 for newline and null terminator
+    char lineBuffer[size + 2];                              // +2 for newline and null terminator
     for (int i = 0; i < size && fgets(lineBuffer, sizeof(lineBuffer), fp) != NULL; i++) {
         if (i == size-1) {
             strncpy(gameMap->grid[i], lineBuffer, size+1);
-            gameMap->grid[i][size] = '\0';  // Ensure null termination
+            gameMap->grid[i][size] = '\0';                  // Ensure null termination
             break;
         }
         strncpy(gameMap->grid[i], lineBuffer, size+2);
-        gameMap->grid[i][size] = '\n';      // Ensure null termination
-        gameMap->grid[i][size+1] = '\0';    // Ensure null termination
+        gameMap->grid[i][size] = '\n';                      // Ensure null termination
+        gameMap->grid[i][size+1] = '\0';                    // Ensure null termination
     }
 
     // Find empty spaces after loading the map
@@ -179,4 +181,72 @@ int main(int argc, char* argv[]) {
 
     free(game_map);
     return 0;
+}
+
+char* serialize_map_with_players(GameMap *gameMap, addr_t from) {
+    // Calculate buffer size: one char for each cell plus one for each newline, plus one for the null terminator
+    int bufferSize = gameMap->mapSize * (gameMap->mapSize + 1) + 1;
+    char *buffer = malloc(bufferSize);
+    
+    if (buffer == NULL) {
+        perror("Error allocating buffer for serialization");
+        return NULL;
+    }
+
+    // Create a copy of the map
+    char** tempMap = malloc(gameMap->mapSize * sizeof(char*));
+    for (int i = 0; i < gameMap->mapSize; i++) {
+        tempMap[i] = strdup(gameMap->grid[i]); // Copy each row
+        if (tempMap[i] == NULL) {
+            // Handle allocation failure; free previously allocated strings and the array, then return NULL
+            for (int j = 0; j < i; j++) {
+                free(tempMap[j]);
+            }
+            free(tempMap);
+            free(buffer);
+            return NULL;
+        }
+    }
+
+    // Overlay players' positions on the temporary map
+    for (int i = 0; i < 26; i++) {
+        Player* player = gameMap->players[i];
+        if (player != NULL) {
+            // Ensure the position is within the bounds of the map
+            if (player->position[0] >= 0 && player->position[0] < gameMap->mapSize &&
+                player->position[1] >= 0 && player->position[1] < gameMap->mapSize) {
+                if (!message_eqAddr(player->from, from)) {
+                    tempMap[player->position[1]][player->position[0]] = player->ID; // Use the player's ID as the character
+                } else {
+                    tempMap[player->position[1]][player->position[0]] = '@';        // Use the player's ID as the character
+                }
+            }
+        }
+    }
+
+    // Overlay gold piles positions on the temporary map
+    for (int i = 0; i < gameMap->numGoldPiles; i++) {                               // Assuming numGoldPiles is the number of gold piles
+        GoldPile goldPile = gameMap->gold_piles[i];
+        // Ensure the position is within the bounds of the map
+        if (goldPile.position[0] >= 0 && goldPile.position[0] < gameMap->mapSize &&
+            goldPile.position[1] >= 0 && goldPile.position[1] < gameMap->mapSize) {
+            tempMap[goldPile.position[1]][goldPile.position[0]] = '*';
+        }
+    }
+
+    // Serialize the temporary map into the buffer
+    char* p = buffer;
+    for (int i = 0; i < gameMap->mapSize; i++) {
+        strncpy(p, tempMap[i], gameMap->mapSize + 1);                               // Copy each row including the newline
+        p += gameMap->mapSize + 1;                                                  // Move the pointer by the size of the row plus newline
+    }
+    *p = '\0';                                                                      // Null-terminate the buffer
+
+    // Free the temporary map
+    for (int i = 0; i < gameMap->mapSize; i++) {
+        free(tempMap[i]);
+    }
+    free(tempMap);
+
+    return buffer;                                                                  // Return the serialized buffer
 }
