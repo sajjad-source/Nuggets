@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <string.h>
-#include "message.h"
+#include "support/message.h"
 #include <ncurses.h>
 
 /**************** file-local functions ****************/

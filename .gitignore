@@ -33,6 +33,9 @@ Icon?
 ._*
 .Spotlight-V*
 .Trashes
+server
+client
+
 
 ###########################################################################
 # custom additions below here; see also .gitignore files in subdirectories.
