@@ -96,42 +96,34 @@ GameMap* initialize_game(const char* map_filename) {
     }
 
     // Read the map from the file
-    char lineBuffer[size + 2]; // +2 for newline and null terminator
+    char lineBuffer[size + 2];              // +2 for newline and null terminator
     for (int i = 0; i < size && fgets(lineBuffer, sizeof(lineBuffer), fp) != NULL; i++) {
         if (i == size-1) {
             strncpy(gameMap->grid[i], lineBuffer, size+1);
-            gameMap->grid[i][size] = '\0'; // Ensure null termination
+            gameMap->grid[i][size] = '\0';  // Ensure null termination
             break;
         }
         strncpy(gameMap->grid[i], lineBuffer, size+2);
-        gameMap->grid[i][size] = '\n'; // Ensure null termination
-        gameMap->grid[i][size+1] = '\0'; // Ensure null termination
+        gameMap->grid[i][size] = '\n';      // Ensure null termination
+        gameMap->grid[i][size+1] = '\0';    // Ensure null termination
     }
+
+    // Find empty spaces after loading the map
+    int emptySpaceCount;
+    Empty* emptySpaces = find_empty_spaces(gameMap->grid, gameMap->mapSize, &emptySpaceCount);
+
+    gameMap->emptySpaceCount = emptySpaceCount;
+
+    gameMap->emptySpaces = emptySpaces;
+
+    if (emptySpaceCount == 0) {
+        fprintf(stderr, "No empty spaces found on the map.\n");
+    }
+
+    distribute_gold(gameMap, 250, 10, 30);
 
     fclose(fp);
     return gameMap;
-}
-
-char* serialize_map(GameMap *gameMap) {
-    // Calculate buffer size: one char for each cell plus one for each newline, plus one for the null terminator
-    int bufferSize = gameMap->mapSize * (gameMap->mapSize + 1) + 1;
-    char *buffer = malloc(bufferSize);
-    if (buffer == NULL) {
-        perror("Error allocating buffer for serialization");
-        return NULL;
-    }
-
-    char* p = buffer;
-    for (int i = 0; i < gameMap->mapSize; i++) {
-        // Copy the row and add a newline character
-        strncpy(p, gameMap->grid[i], gameMap->mapSize+1);
-        p += gameMap->mapSize;
-        // *p = '\n';
-        p += 1;
-    }
-    *p = '\0'; // Null-terminate the buffer
-
-    return buffer; 
 }
 
 bool handle_player_join(void* arg, const addr_t from, const char* buf) {
@@ -147,8 +139,6 @@ bool handle_player_join(void* arg, const addr_t from, const char* buf) {
         free(player);
         return true;
     }
-
-    strcpy(player->name, buf);
 
     message_send(from, serialize_map(game_map));
 
