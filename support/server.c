@@ -10,6 +10,7 @@ typedef struct {
     int position[2];
     int gold_count;
     char** visible_grid;
+    addr_t playerAdd;
 } Player;
 
 typedef struct {
@@ -84,6 +85,11 @@ GameMap* initialize_game(const char* map_filename) {
     // Read the map from the file
     char lineBuffer[size + 2]; // +2 for newline and null terminator
     for (int i = 0; i < size && fgets(lineBuffer, sizeof(lineBuffer), fp) != NULL; i++) {
+        if (i == size-1) {
+            strncpy(gameMap->grid[i], lineBuffer, size+1);
+            gameMap->grid[i][size] = '\0'; // Ensure null termination
+            break;
+        }
         strncpy(gameMap->grid[i], lineBuffer, size+2);
         gameMap->grid[i][size] = '\n'; // Ensure null termination
         gameMap->grid[i][size+1] = '\0'; // Ensure null termination
@@ -93,13 +99,51 @@ GameMap* initialize_game(const char* map_filename) {
     return gameMap;
 }
 
+char* serialize_map(GameMap *gameMap) {
+    // Calculate buffer size: one char for each cell plus one for each newline, plus one for the null terminator
+    int bufferSize = gameMap->mapSize * (gameMap->mapSize + 1) + 1;
+    char *buffer = malloc(bufferSize);
+    if (buffer == NULL) {
+        perror("Error allocating buffer for serialization");
+        return NULL;
+    }
+
+    char* p = buffer;
+    for (int i = 0; i < gameMap->mapSize; i++) {
+        // Copy the row and add a newline character
+        strncpy(p, gameMap->grid[i], gameMap->mapSize+1);
+        p += gameMap->mapSize;
+        // *p = '\n';
+        p += 1;
+    }
+    *p = '\0'; // Null-terminate the buffer
+
+    return buffer; 
+}
+
 bool handle_player_join(void* arg, const addr_t from, const char* buf) {
     // This handler will be called when a 'join' message is received.
 
-    printf("joined @: %s", message_stringAddr(from));
+    GameMap* game_map = (GameMap*)arg;
 
-    // Return true if the message loop should continue, false if it should terminate.
-    return true;
+    printf("player %s joined @: %s\n", buf, message_stringAddr(from));
+
+    Player* player = malloc(sizeof(Player));
+    if (!player) {
+        perror("Error allocating memory for player");
+        free(player);
+        return true;
+    }
+
+    strcpy(player->name, buf);
+    player->playerAdd = from;
+
+    message_send(from, serialize_map(game_map));
+
+    game_map->players = player;
+
+    // Return false if the message loop should continue, true if it should terminate.
+    return false;
 }
 
 
@@ -125,7 +169,6 @@ int main(int argc, char* argv[]) {
 
     for (int i = 0; i < game_map->mapSize; i++) {
         printf("%s", game_map->grid[i]);
-        // printf("%d", game_map->mapSize);
     }
     
     // Start the message loop, passing in handlers for different message types
