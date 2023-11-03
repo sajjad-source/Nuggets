@@ -209,41 +209,6 @@ bool handle_player_join(void* arg, const addr_t from, const char* buf) {
     return false;
 }
 
-
-int main(int argc, char* argv[]) {
-    if (argc < 2) {
-        printf("Usage: ./server <map_filename>\n");
-        return 1;
-    }
-    
-    // Initialize the messaging system and start listening on a port
-    int port = message_init(stderr);
-    if (port == 0) {
-        fprintf(stderr, "Failed to initialize messaging system.\n");
-        return 1;
-    }
-
-    // Load the game map and initialize the game state
-    GameMap* game_map = initialize_game(argv[1]);
-    if (game_map == NULL) {
-        fprintf(stderr, "Failed to initialize game.\n");
-        return 1;
-    }
-
-    for (int i = 0; i < game_map->mapSize; i++) {
-        printf("%s", game_map->grid[i]);
-    }
-    
-    // Start the message loop, passing in handlers for different message types
-    message_loop(game_map, 0, NULL, NULL, handle_player_join);
-
-    // Cleanup
-    message_done();
-
-    free(game_map);
-    return 0;
-}
-
 char* serialize_map_with_players(GameMap *gameMap, addr_t from) {
     // Calculate buffer size: one char for each cell plus one for each newline, plus one for the null terminator
     int bufferSize = gameMap->mapSize * (gameMap->mapSize + 1) + 1;
@@ -310,4 +275,83 @@ char* serialize_map_with_players(GameMap *gameMap, addr_t from) {
     free(tempMap);
 
     return buffer;                                                                  // Return the serialized buffer
+}
+
+bool handleMessage(void* arg, const addr_t from, const char* buf) {
+    GameMap* game_map = (GameMap*)arg;
+    char* message = strdup(buf);                                // Duplicate the buffer to use with strtok
+
+    if (message != NULL) {
+        char* command = strtok(message, " ");
+
+        if (command != NULL && strcmp(command, "Join") == 0) {
+            char* playerName = strtok(NULL, " ");
+            if (playerName != NULL) {
+                handle_player_join(game_map, from, playerName);
+            }
+        } else {
+            printf("Unknown command received.\n");
+        } 
+        
+        if (strcmp(command, "Move") == 0) {
+            char* moveDirection = strtok(NULL, " ");
+            if (moveDirection != NULL) {
+            handle_player_move(game_map, from, moveDirection);
+            }
+        } else {
+            printf("Unknown command received.\n");
+        }
+
+        printf("Message %s from: %s\n", buf, message_stringAddr(from));
+
+        free(message);                                          // Free the duplicated message buffer
+    }
+
+
+    for (int i = 0; i < 26; i++) {
+        if (game_map->players[i] != NULL) {
+                                                                // Use serialize_map_with_players to account for players on the map
+            char* serializedMap = serialize_map_with_players(game_map, game_map->players[i]->from);
+            if (serializedMap != NULL) {
+                message_send(game_map->players[i]->from, serializedMap);
+                free(serializedMap);                            // Remember to free the serialized map
+            }
+        }
+    }
+
+    return false;                                               // Continue the message loop
+}
+
+int main(int argc, char* argv[]) {
+    if (argc < 2) {
+        printf("Usage: ./server <map_filename>\n");
+        return 1;
+    }
+    
+    // Initialize the messaging system and start listening on a port
+    int port = message_init(stderr);
+    if (port == 0) {
+        fprintf(stderr, "Failed to initialize messaging system.\n");
+        return 1;
+    }
+
+    // Load the game map and initialize the game state
+    GameMap* game_map = initialize_game(argv[1]);
+    if (game_map == NULL) {
+        fprintf(stderr, "Failed to initialize game.\n");
+        return 1;
+    }
+
+    for (int i = 0; i < game_map->mapSize; i++) {
+        printf("%s", game_map->grid[i]);
+    }
+    
+    // Start the message loop, passing in handlers for different message types
+    message_loop(game_map, 0, NULL, NULL, handle_player_join);
+
+    // Cleanup
+    message_done();
+
+    free(game_map);
+    return 0;
 }
