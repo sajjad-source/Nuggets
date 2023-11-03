@@ -36,7 +36,7 @@ int main(const int argc, char* argv[]) {
 
     // Construct the PLAY [name] message
     char playMsg[message_MaxBytes];
-    snprintf(playMsg, sizeof(playMsg), "PLAY %s", argv[3]);
+    snprintf(playMsg, sizeof(playMsg), "Join %s", argv[3]);
 
     // Send the PLAY [name] message to the server
     message_send(server, playMsg);
@@ -63,21 +63,22 @@ static bool handleInput(void* arg) {
     if (ch != ERR) { // ERR if no key is pressed
 
         // Translate the keypress to a server command
-        char command[50];
+        // Construct the Move [key] message
+        char command[message_MaxBytes];
         switch (ch) {
             case 'Q': // quit
                 return true; // return true to indicate we're done
             case 'h': // move left
-                snprintf(command, sizeof(command), "key command: %c", ch);
+                snprintf(command, sizeof(command), "Move %c", ch);
                 break;
             case 'l': // move right
-                snprintf(command, sizeof(command), "key command: %c", ch);
+                snprintf(command, sizeof(command), "Move %c", ch);
                 break;
             case 'j': // move down
-                snprintf(command, sizeof(command), "key command: %c", ch);
+                snprintf(command, sizeof(command), "Move %c", ch);
                 break;
             case 'k': // move up
-                snprintf(command, sizeof(command), "key command: %c", ch);
+                snprintf(command, sizeof(command), "Move %c", ch);
                 break;
             default:
                 return false; // if key is not recognized, do nothing
@@ -93,7 +94,6 @@ static bool handleInput(void* arg) {
 
 /**************** handleMessage ****************/
 static bool handleMessage(void* arg, const addr_t from, const char* message) {
-
     // Clear the screen from the previous content
     clear();
 
