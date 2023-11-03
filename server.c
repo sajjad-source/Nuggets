@@ -347,7 +347,7 @@ int main(int argc, char* argv[]) {
     }
     
     // Start the message loop, passing in handlers for different message types
-    message_loop(game_map, 0, NULL, NULL, handle_player_join);
+    message_loop(game_map, 0, NULL, NULL, handleMessage);
 
     // Cleanup
     message_done();
