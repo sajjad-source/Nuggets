@@ -48,6 +48,7 @@ GameMap* initialize_game(const char* map_filename, int seed);
 void handle_player_join(GameMap* game_map, addr_t from, char* buf);
 bool handle_player_quit(void* arg, const addr_t from, const char* buf);
 void handle_player_move(GameMap* game_map, addr_t from, char* buf);
+void game_over(GameMap* game_map);
 
 
 // This function is used to find empty spaces on the map
@@ -86,10 +87,12 @@ void distribute_gold(GameMap* game_map, int goldTotal, int goldMinNumPiles, int 
     int remainingGold = goldTotal;
     for (int i = 0; i < numPiles; i++) {
         // Ensure each pile gets at least 1 gold piece
-        int goldInPile = (remainingGold > (numPiles - i)) ? (1 + rand() % (remainingGold - (numPiles - i))) : 1;
+        int goldInPile = (remainingGold > (numPiles - i)) ? (1 + rand() % (remainingGold - (numPiles - i) + 1)) : 1;
         game_map->gold_piles[i].gold_count = goldInPile;
         remainingGold -= goldInPile;
     }
+
+    printf("This is gold remainging: %d\n", remainingGold);
 
     // Place gold piles on the map
     for (int i = 0; i < numPiles; i++) {
@@ -292,6 +295,8 @@ void handle_player_join(GameMap* game_map, addr_t from, char* player_name) {
 
         game_map->players[26] = player;
 
+        printf("Spectator joined\n");
+
         return;
     }
 
@@ -462,7 +467,32 @@ bool handleMessage(void* arg, const addr_t from, const char* buf) {
         }
     }
 
+    if (game_map->goldLeft == 0) {
+        game_over(game_map);
+        return true;
+    }
+
     return false; // Continue the message loop
+}
+
+void game_over(GameMap* game_map) {
+
+    char gameOverMesg[1000];
+    gameOverMesg[0] = '\0';
+
+    strcat(gameOverMesg, "GAME OVER:\n");
+    for (int i = 0; i < 26; i++) {
+        if (game_map->players[i] != NULL) {
+            char message[100];
+            snprintf(message, 100, "%c %d %s\n", game_map->players[i]->ID, game_map->players[i]->gold_count, game_map->players[i]->name);
+            strcat(gameOverMesg, message);
+        }
+    }
+    for (int i = 0; i <= 26; i++) {
+        if (game_map->players[i] != NULL) {
+            message_send(game_map->players[i]->from, gameOverMesg);
+        }
+    }
 }
 
 int main(int argc, char* argv[]) {
