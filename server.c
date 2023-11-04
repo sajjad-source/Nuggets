@@ -194,6 +194,7 @@ GameMap* initialize_game(const char* map_filename, int seed) {
     distribute_gold(gameMap, 250, 10, 30);
 
     fclose(fp);
+
     return gameMap;
 }
 
@@ -273,6 +274,8 @@ char* serialize_map_with_players(GameMap *gameMap, addr_t from) {
     free(tempMap);
 
     strcat(playerInfo, buffer);
+
+    free(buffer);
 
     return playerInfo; // Return the serialized buffer
 }
@@ -434,6 +437,7 @@ bool handleMessage(void* arg, const addr_t from, const char* buf) {
             char* playerName = strtok(NULL, " ");
             if (playerName != NULL && strcmp(playerName, "Spectator") != 0) {
                 handle_player_join(game_map, from, playerName);
+                free(playerName);
             } else {
                 handle_player_join(game_map, from, "Spectator");
             }
@@ -445,10 +449,13 @@ bool handleMessage(void* arg, const addr_t from, const char* buf) {
             char* moveDirection = strtok(NULL, " ");
             if (moveDirection != NULL) {
             handle_player_move(game_map, from, moveDirection);
+            free(moveDirection);
             }
         } else {
             printf("Unknown command received.\n");
         }
+
+        free(command);
 
         printf("Message %s from: %s\n", buf, message_stringAddr(from));
 
@@ -462,7 +469,7 @@ bool handleMessage(void* arg, const addr_t from, const char* buf) {
             char* serializedMap = serialize_map_with_players(game_map, game_map->players[i]->from);
             if (serializedMap != NULL) {
                 message_send(game_map->players[i]->from, serializedMap);
-                free(serializedMap); // Remember to free the serialized map
+                free(serializedMap);
             }
         }
     }
@@ -493,6 +500,7 @@ void game_over(GameMap* game_map) {
             message_send(game_map->players[i]->from, gameOverMesg);
         }
     }
+
 }
 
 int main(int argc, char* argv[]) {
@@ -533,6 +541,24 @@ int main(int argc, char* argv[]) {
     // Cleanup
     message_done();
 
+    free(game_map->emptySpaces);
+
+
+    free(game_map->gold_piles);
+
+
+    for (int j = 0; j < 27; j++) {
+        if (game_map->players[j] != NULL) {
+            free(game_map->players[j]);
+        }
+    }
+
+    for (int j = 0; j < game_map->mapSize; j++) {
+        free(game_map->grid[j]);
+    }
+    free(game_map->grid);
+
     free(game_map);
+
     return 0;
 }
