@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "support/message.h"
+#include "math.h"
 
 // Major Data Structures
 typedef struct {
@@ -41,9 +42,12 @@ char characters[] = { 'a', 'b', 'c', 'd', 'e', 'f', 'g' };
 GameMap* load_map(const char* map_filename);
 GameMap* initialize_game(const char* map_filename);
 void handle_player_join(GameMap* game_map, addr_t from, char* buf);
-bool handle_player_quit(void* arg, const addr_t from, const char* buf);
 void handle_player_move(GameMap* game_map, addr_t from, char* buf);
-
+void calculate_visibility(GameMap* game_map, Player* player);
+bool handle_player_quit(void* arg, const addr_t from, const char* buf);
+bool line_of_sight(GameMap* game_map, int x0, int y0, int x1, int y1);
+bool is_clear_path(GameMap* game_map, int x0, int y0, int x1, int y1);
+bool handleMessage(void* arg, const addr_t from, const char* buf);
 
 // This function is used to find empty spaces on the map
 Empty* find_empty_spaces(char** grid, int size, int* count) {
@@ -188,69 +192,83 @@ GameMap* initialize_game(const char* map_filename) {
 }
 
 char* serialize_map_with_players(GameMap *gameMap, addr_t from) {
-    // Calculate buffer size: one char for each cell plus one for each newline, plus one for the null terminator
+    // Find the current player based on 'from' address
+    Player* current_player = NULL;
+    for (int i = 0; i < 26; i++) {
+        if (gameMap->players[i] && message_eqAddr(gameMap->players[i]->from, from)) {
+            current_player = gameMap->players[i];
+            break;
+        }
+    }
+
+    // If the current player is not found, return NULL
+    if (current_player == NULL) {
+        fprintf(stderr, "Player not found for the given address.\n");
+        return NULL;
+    }
+
+    // Calculate visibility for the current player
+    calculate_visibility(gameMap, current_player);
+
+    // Allocate buffer for serialization
     int bufferSize = gameMap->mapSize * (gameMap->mapSize + 1) + 1;
     char *buffer = malloc(bufferSize);
-    
     if (buffer == NULL) {
         perror("Error allocating buffer for serialization");
         return NULL;
     }
 
-    // Create a copy of the map
-    char** tempMap = malloc(gameMap->mapSize * sizeof(char*));
-    for (int i = 0; i < gameMap->mapSize; i++) {
-        tempMap[i] = strdup(gameMap->grid[i]); // Copy each row
-        if (tempMap[i] == NULL) {
-            // Handle allocation failure; free previously allocated strings and the array, then return NULL
-            for (int j = 0; j < i; j++) {
-                free(tempMap[j]);
-            }
-            free(tempMap);
-            free(buffer);
-            return NULL;
-        }
-    }
-
-    // Overlay players' positions on the temporary map
-    for (int i = 0; i < 26; i++) {
-        Player* player = gameMap->players[i];
-        if (player != NULL) {
-            // Ensure the position is within the bounds of the map
-            if (player->position[0] >= 0 && player->position[0] < gameMap->mapSize &&
-                player->position[1] >= 0 && player->position[1] < gameMap->mapSize) {
-                if (!message_eqAddr(player->from, from)) {
-                    tempMap[player->position[1]][player->position[0]] = player->ID; // Use the player's ID as the character
-                } else {
-                    tempMap[player->position[1]][player->position[0]] = '@'; // Use the player's ID as the character
-                }
-            }
-        }
-    }
-
-    // Overlay gold piles positions on the temporary map
-    for (int i = 0; i < gameMap->numGoldPiles; i++) { // Assuming numGoldPiles is the number of gold piles
-        GoldPile goldPile = gameMap->gold_piles[i];
-        // Ensure the position is within the bounds of the map
-        if (goldPile.position[0] >= 0 && goldPile.position[0] < gameMap->mapSize &&
-            goldPile.position[1] >= 0 && goldPile.position[1] < gameMap->mapSize) {
-            tempMap[goldPile.position[1]][goldPile.position[0]] = '*';
-        }
-    }
-
-    // Serialize the temporary map into the buffer
+    // Copy the visible elements of the map to the buffer
     char* p = buffer;
-    for (int i = 0; i < gameMap->mapSize; i++) {
-        strncpy(p, tempMap[i], gameMap->mapSize + 1); // Copy each row including the newline
-        p += gameMap->mapSize + 1; // Move the pointer by the size of the row plus newline
+    for (int y = 0; y < gameMap->mapSize; y++) {
+        for (int x = 0; x < gameMap->mapSize; x++) {
+            // Check if the current position is visible to the player
+            if (current_player->visible_grid[y][x] != ' ') {
+                // Overlay players' positions on the visible map
+                bool player_here = false;
+                for (int i = 0; i < 26; i++) {
+                    Player* player = gameMap->players[i];
+                    if (player && player->position[0] == x && player->position[1] == y) {
+                        if (!message_eqAddr(player->from, from)) {
+                            *p++ = player->ID; // Other player's ID
+                        } else {
+                            *p++ = '@'; // Current player
+                        }
+                        player_here = true;
+                        break;
+                    }
+                }
+
+                // Overlay gold piles if no player is present at this position
+                if (!player_here) {
+                    bool gold_here = false;
+                    for (int i = 0; i < gameMap->numGoldPiles; i++) {
+                        GoldPile goldPile = gameMap->gold_piles[i];
+                        if (goldPile.position[0] == x && goldPile.position[1] == y) {
+                            *p++ = '*'; // Gold pile
+                            gold_here = true;
+                            break;
+                        }
+                    }
+                    // If no player or gold is present, copy the map character
+                    if (!gold_here) {
+                        *p++ = current_player->visible_grid[y][x];
+                    }
+                }
+            } else {
+                *p++ = ' '; // Non-visible spaces remain blank
+            }
+        }
+        *p++ = '\n'; // Add newline at the end of each row
     }
     *p = '\0'; // Null-terminate the buffer
 
-    // Free the temporary map
+    // Free the visibility grid allocated in calculate_visibility
     for (int i = 0; i < gameMap->mapSize; i++) {
-        free(tempMap[i]);
+        free(current_player->visible_grid[i]);
     }
-    free(tempMap);
+    free(current_player->visible_grid);
+    current_player->visible_grid = NULL;
 
     return buffer; // Return the serialized buffer
 }
@@ -378,8 +396,6 @@ void handle_player_move(GameMap* game_map, addr_t from, char* moveDirectionStr) 
     }
 }
 
-
-
 bool handleMessage(void* arg, const addr_t from, const char* buf) {
     GameMap* game_map = (GameMap*)arg;
     char* message = strdup(buf); // Duplicate the buffer to use with strtok
@@ -410,7 +426,6 @@ bool handleMessage(void* arg, const addr_t from, const char* buf) {
         free(message); // Free the duplicated message buffer
     }
 
-
     for (int i = 0; i < 26; i++) {
         if (game_map->players[i] != NULL) {
             // Use serialize_map_with_players to account for players on the map
@@ -425,7 +440,82 @@ bool handleMessage(void* arg, const addr_t from, const char* buf) {
     return false; // Continue the message loop
 }
 
+bool is_clear_path(GameMap* game_map, int start_x, int start_y, int end_x, int end_y) {
+    int delta_x = abs(end_x - start_x);
+    int delta_y = -abs(end_y - start_y);
+    int step_x = start_x < end_x ? 1 : -1;
+    int step_y = start_y < end_y ? 1 : -1;
+    int error = delta_x + delta_y; // The error accumulator
 
+    while (true) {
+        // Check if we've reached the target point
+        if (start_x == end_x && start_y == end_y) {
+            // Check if the current position is a wall
+            char current_pos = game_map->grid[start_y][start_x];
+            if (current_pos == '-' || current_pos == '|') {
+                return true;        // The wall is visible
+            }
+            break;                  // Reached the target, end the loop
+        }
+
+        // Check if the current position is a clear path
+        if (game_map->grid[start_y][start_x] != '.' && game_map->grid[start_y][start_x] != ' ') {
+            return false; // It's not a clear path
+        }
+
+        int error2 = 2 * error;
+        if (error2 >= delta_y) {
+            error += delta_y;       // Adjust the error
+            start_x += step_x;      // Take a step in x
+        }
+        if (error2 <= delta_x) {
+            error += delta_x;       // Adjust the error
+            start_y += step_y;      // Take a step in y
+        }
+    }
+
+    // Clear path if we've reached this point
+    return true;
+}
+
+bool line_of_sight(GameMap* game_map, int pr, int pc, int r, int c) {
+    // Directly adjacent spots are always visible
+    if (abs(pr - r) <= 1 && abs(pc - c) <= 1) {
+        return true;
+    }
+
+    // Check if there is a clear path to the target spot
+    return is_clear_path(game_map, pr, pc, r, c);
+}
+
+void calculate_visibility(GameMap* game_map, Player* player) {
+    // Create a visible grid for the player with the same size as the game_map
+    player->visible_grid = malloc(game_map->mapSize * sizeof(char*));
+    for (int i = 0; i < game_map->mapSize; i++) {
+        player->visible_grid[i] = malloc((game_map->mapSize + 1) * sizeof(char));
+        memset(player->visible_grid[i], ' ', game_map->mapSize);
+        player->visible_grid[i][game_map->mapSize] = '\0'; // Null-terminate the string
+    }
+
+    // Check visibility for every cell in the grid
+    for (int y = 0; y < game_map->mapSize; y++) {
+        for (int x = 0; x < game_map->mapSize; x++) {
+            if (game_map->grid[y][x] == '-' || game_map->grid[y][x] == '|') {
+                // Check each point on the wall for visibility
+                for (int offset = -1; offset <= 1; offset += 2) {
+                    int checkX = (x == 0 || x == game_map->mapSize - 1) ? x : x + offset;
+                    int checkY = (y == 0 || y == game_map->mapSize - 1) ? y : y + offset;
+                    if (line_of_sight(game_map, player->position[0], player->position[1], checkX, checkY)) {
+                        player->visible_grid[y][x] = game_map->grid[y][x];
+                        break;
+                    }
+                }
+            } else if (line_of_sight(game_map, player->position[0], player->position[1], x, y)) {
+                player->visible_grid[y][x] = game_map->grid[y][x]; // Mark cell as visible
+            }
+        }
+    }
+}
 
 int main(int argc, char* argv[]) {
     if (argc < 2) {
