@@ -44,7 +44,7 @@ char characters[] = {
 
 // Function declarations
 GameMap* load_map(const char* map_filename);
-GameMap* initialize_game(const char* map_filename);
+GameMap* initialize_game(const char* map_filename, int seed);
 void handle_player_join(GameMap* game_map, addr_t from, char* buf);
 bool handle_player_quit(void* arg, const addr_t from, const char* buf);
 void handle_player_move(GameMap* game_map, addr_t from, char* buf);
@@ -71,9 +71,6 @@ Empty* find_empty_spaces(char** grid, int size, int* count) {
 }
 
 void distribute_gold(GameMap* game_map, int goldTotal, int goldMinNumPiles, int goldMaxNumPiles) {
-
-    // Seed the random number generator
-    srand(10);
 
     // Determine the number of gold piles
     int numPiles = goldMinNumPiles + rand() % (goldMaxNumPiles - goldMinNumPiles + 1);
@@ -112,7 +109,11 @@ void distribute_gold(GameMap* game_map, int goldTotal, int goldMinNumPiles, int 
     game_map->goldLeft = goldTotal;
 }
 
-GameMap* initialize_game(const char* map_filename) {
+GameMap* initialize_game(const char* map_filename, int seed) {
+
+    // Seed the random number generator
+    srand(seed);
+
     // Open the map file
     FILE* fp = fopen(map_filename, "r");
     if (fp == NULL) {
@@ -465,8 +466,8 @@ bool handleMessage(void* arg, const addr_t from, const char* buf) {
 }
 
 int main(int argc, char* argv[]) {
-    if (argc < 2) {
-        printf("Usage: ./server <map_filename>\n");
+    if (argc != 2 && argc != 3) {
+        printf("Usage: ./server <map_filename> [seed]\n");
         return 1;
     }
     
@@ -478,7 +479,13 @@ int main(int argc, char* argv[]) {
     }
 
     // Load the game map and initialize the game state
-    GameMap* game_map = initialize_game(argv[1]);
+    GameMap* game_map;
+    if (argc == 3) {
+        game_map = initialize_game(argv[1], atoi(argv[2]));
+    } else {
+        game_map = initialize_game(argv[1], 10);
+    }
+
     if (game_map == NULL) {
         fprintf(stderr, "Failed to initialize game.\n");
         return 1;
