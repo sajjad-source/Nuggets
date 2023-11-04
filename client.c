@@ -19,8 +19,8 @@ int main(const int argc, char* argv[]) {
     }
 
     // Check arguments
-    if (argc != 4) { // Expecting one more argument for player's name
-        fprintf(stderr, "usage: %s hostname port playername\n", argv[0]);
+    if (argc != 4 && argc != 3) { // Expecting one more argument for player's name
+        fprintf(stderr, "usage: %s hostname port [playername]\n", argv[0]);
         return 3; // Bad command line
     }
 
@@ -36,7 +36,12 @@ int main(const int argc, char* argv[]) {
 
     // Construct the PLAY [name] message
     char playMsg[message_MaxBytes];
-    snprintf(playMsg, sizeof(playMsg), "Join %s", argv[3]);
+
+    if (argc == 3) {
+        snprintf(playMsg, sizeof(playMsg), "Join %s", "Spectator");
+    } else {
+        snprintf(playMsg, sizeof(playMsg), "Join %s", argv[3]);
+    }
 
     // Send the PLAY [name] message to the server
     message_send(server, playMsg);
@@ -65,23 +70,13 @@ static bool handleInput(void* arg) {
         // Translate the keypress to a server command
         // Construct the Move [key] message
         char command[message_MaxBytes];
-        switch (ch) {
-            case 'Q': // quit
-                return true; // return true to indicate we're done
-            case 'h': // move left
-                snprintf(command, sizeof(command), "Move %c", ch);
-                break;
-            case 'l': // move right
-                snprintf(command, sizeof(command), "Move %c", ch);
-                break;
-            case 'j': // move down
-                snprintf(command, sizeof(command), "Move %c", ch);
-                break;
-            case 'k': // move up
-                snprintf(command, sizeof(command), "Move %c", ch);
-                break;
-            default:
-                return false; // if key is not recognized, do nothing
+
+        if (ch == 'h' || ch == 'l' || ch == 'j' || ch == 'k' || ch == 'u' || ch == 'y' || ch == 'b' || ch == 'n') {
+            snprintf(command, sizeof(command), "Move %c", ch);
+        } else if (ch == 'q') {
+            return true;
+        } else {
+            return false;
         }
         
         // Send the command to the server
