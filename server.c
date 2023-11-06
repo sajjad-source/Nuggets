@@ -552,7 +552,7 @@ int main(int argc, char* argv[]) {
             free(game_map->players[j]);
         }
     }
-
+    
     for (int j = 0; j < game_map->mapSize; j++) {
         free(game_map->grid[j]);
     }
