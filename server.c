@@ -39,15 +39,47 @@ static int playerID = 1;
 char characters[] = { 'a', 'b', 'c', 'd', 'e', 'f', 'g' };
 
 // Function declarations
-GameMap* load_map(const char* map_filename);
 GameMap* initialize_game(const char* map_filename);
 void handle_player_join(GameMap* game_map, addr_t from, char* buf);
 void handle_player_move(GameMap* game_map, addr_t from, char* buf);
 void calculate_visibility(GameMap* game_map, Player* player);
-bool handle_player_quit(void* arg, const addr_t from, const char* buf);
 bool line_of_sight(GameMap* game_map, int x0, int y0, int x1, int y1);
 bool is_clear_path(GameMap* game_map, int x0, int y0, int x1, int y1);
 bool handleMessage(void* arg, const addr_t from, const char* buf);
+
+int main(int argc, char* argv[]) {
+    if (argc < 2) {
+        printf("Usage: ./server <map_filename>\n");
+        return 1;
+    }
+    
+    // Initialize the messaging system and start listening on a port
+    int port = message_init(stderr);
+    if (port == 0) {
+        fprintf(stderr, "Failed to initialize messaging system.\n");
+        return 1;
+    }
+
+    // Load the game map and initialize the game state
+    GameMap* game_map = initialize_game(argv[1]);
+    if (game_map == NULL) {
+        fprintf(stderr, "Failed to initialize game.\n");
+        return 1;
+    }
+
+    for (int i = 0; i < game_map->mapSize; i++) {
+        printf("%s", game_map->grid[i]);
+    }
+    
+    // Start the message loop, passing in handlers for different message types
+    message_loop(game_map, 0, NULL, NULL, handleMessage);
+
+    // Cleanup
+    message_done();
+
+    free(game_map);
+    return 0;
+}
 
 // This function is used to find empty spaces on the map
 Empty* find_empty_spaces(char** grid, int size, int* count) {
@@ -441,18 +473,18 @@ bool handleMessage(void* arg, const addr_t from, const char* buf) {
 }
 
 bool is_clear_path(GameMap* game_map, int start_x, int start_y, int end_x, int end_y) {
-    int delta_x = abs(end_x - start_x);
-    int delta_y = -abs(end_y - start_y);
-    int step_x = start_x < end_x ? 1 : -1;
-    int step_y = start_y < end_y ? 1 : -1;
-    int error = delta_x + delta_y; // The error accumulator
+    float delta_x = abs(end_x - start_x);
+    float delta_y = -abs(end_y - start_y);
+    float step_x = start_x < end_x ? 1 : -1;
+    float step_y = start_y < end_y ? 1 : -1;
+    float error = delta_x + delta_y; // The error accumulator
 
     while (true) {
         // Check if we've reached the target point
         if (start_x == end_x && start_y == end_y) {
             // Check if the current position is a wall
             char current_pos = game_map->grid[start_y][start_x];
-            if (current_pos == '-' || current_pos == '|') {
+            if (current_pos == '-' || current_pos == '|' || current_pos == '+') {
                 return true;        // The wall is visible
             }
             break;                  // Reached the target, end the loop
@@ -460,7 +492,7 @@ bool is_clear_path(GameMap* game_map, int start_x, int start_y, int end_x, int e
 
         // Check if the current position is a clear path
         if (game_map->grid[start_y][start_x] != '.' && game_map->grid[start_y][start_x] != ' ') {
-            return false; // It's not a clear path
+            return false;           // It's not a clear path
         }
 
         int error2 = 2 * error;
@@ -500,53 +532,33 @@ void calculate_visibility(GameMap* game_map, Player* player) {
     // Check visibility for every cell in the grid
     for (int y = 0; y < game_map->mapSize; y++) {
         for (int x = 0; x < game_map->mapSize; x++) {
-            if (game_map->grid[y][x] == '-' || game_map->grid[y][x] == '|') {
-                // Check each point on the wall for visibility
-                for (int offset = -1; offset <= 1; offset += 2) {
-                    int checkX = (x == 0 || x == game_map->mapSize - 1) ? x : x + offset;
-                    int checkY = (y == 0 || y == game_map->mapSize - 1) ? y : y + offset;
-                    if (line_of_sight(game_map, player->position[0], player->position[1], checkX, checkY)) {
-                        player->visible_grid[y][x] = game_map->grid[y][x];
-                        break;
+            // For walls, check adjacent tiles as well as direct line of sight
+            if (game_map->grid[y][x] == '-' || game_map->grid[y][x] == '|' || game_map->grid[y][x] == '+') {
+                bool visible = false;
+                for (int dy = -1; dy <= 1; dy++) {
+                    for (int dx = -1; dx <= 1; dx++) {
+                        int checkX = x + dx;
+                        int checkY = y + dy;
+                        // Ensure that we don't check out of bounds or through corners
+                        if (checkY >= 0 && checkY < game_map->mapSize && checkX >= 0 && checkX < game_map->mapSize) {
+                            // Diagonal checks are through corners, so we skip them
+                            if (dx != 0 && dy != 0) continue;
+                            if (line_of_sight(game_map, player->position[0], player->position[1], checkX, checkY)) {
+                                visible = true;
+                                break; // Break out of the inner loop on first visible
+                            }
+                        }
                     }
+                    if (visible) break; // Break out of the outer loop if visible
                 }
-            } else if (line_of_sight(game_map, player->position[0], player->position[1], x, y)) {
-                player->visible_grid[y][x] = game_map->grid[y][x]; // Mark cell as visible
+                if (visible) {
+                    player->visible_grid[y][x] = game_map->grid[y][x];
+                }
+            }
+            // For non-wall tiles, use direct line of sight check
+            else if (line_of_sight(game_map, player->position[0], player->position[1], x, y)) {
+                player->visible_grid[y][x] = game_map->grid[y][x];
             }
         }
     }
-}
-
-int main(int argc, char* argv[]) {
-    if (argc < 2) {
-        printf("Usage: ./server <map_filename>\n");
-        return 1;
-    }
-    
-    // Initialize the messaging system and start listening on a port
-    int port = message_init(stderr);
-    if (port == 0) {
-        fprintf(stderr, "Failed to initialize messaging system.\n");
-        return 1;
-    }
-
-    // Load the game map and initialize the game state
-    GameMap* game_map = initialize_game(argv[1]);
-    if (game_map == NULL) {
-        fprintf(stderr, "Failed to initialize game.\n");
-        return 1;
-    }
-
-    for (int i = 0; i < game_map->mapSize; i++) {
-        printf("%s", game_map->grid[i]);
-    }
-    
-    // Start the message loop, passing in handlers for different message types
-    message_loop(game_map, 0, NULL, NULL, handleMessage);
-
-    // Cleanup
-    message_done();
-
-    free(game_map);
-    return 0;
 }
