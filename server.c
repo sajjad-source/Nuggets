@@ -437,7 +437,7 @@ bool handleMessage(void* arg, const addr_t from, const char* buf) {
             char* playerName = strtok(NULL, " ");
             if (playerName != NULL && strcmp(playerName, "Spectator") != 0) {
                 handle_player_join(game_map, from, playerName);
-                free(playerName);
+                // free(playerName);
             } else {
                 handle_player_join(game_map, from, "Spectator");
             }
@@ -449,13 +449,13 @@ bool handleMessage(void* arg, const addr_t from, const char* buf) {
             char* moveDirection = strtok(NULL, " ");
             if (moveDirection != NULL) {
             handle_player_move(game_map, from, moveDirection);
-            free(moveDirection);
+            // free(moveDirection);
             }
         } else {
             printf("Unknown command received.\n");
         }
 
-        free(command);
+        // free(command);
 
         printf("Message %s from: %s\n", buf, message_stringAddr(from));
 
