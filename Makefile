@@ -30,3 +30,6 @@ clean:
 	rm -f *~ *.o
 	rm -f server
 	rm -f client
+
+
+# mygcc client.c ./support/message.c ./support/log.c -o client -lncurses
