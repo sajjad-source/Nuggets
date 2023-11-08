@@ -13,7 +13,7 @@
 #include <stdbool.h>
 #include <strings.h>
 #include "message.h"
-
+#include <string.h>
 /**************** file-local functions ****************/
 
 static bool handleInput  (void* arg);
