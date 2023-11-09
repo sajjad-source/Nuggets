@@ -33,20 +33,16 @@ void distribute_gold(GameMap* game_map, int goldTotal, int goldMinNumPiles, int 
     for (int i = 0; i < numPiles; i++) {
         if (i < game_map->emptySpaceCount) {
 
-            // Select a random empty space index
             int randomIndex = rand() % game_map->emptySpaceCount;
 
-            // Assign the position of the gold pile to the randomly selected empty space
             game_map->gold_piles[i].position[0] = game_map->emptySpaces[randomIndex].x;
             game_map->gold_piles[i].position[1] = game_map->emptySpaces[randomIndex].y;
 
-            // Swap the selected empty space with the last one in the array and decrease the count
             game_map->emptySpaces[randomIndex] = game_map->emptySpaces[game_map->emptySpaceCount - 1];
             game_map->emptySpaceCount--;
         }
     }
 
-    // Update the game map with the number of gold piles and the total gold remaining
     game_map->numGoldPiles = numPiles;
     game_map->goldLeft = goldTotal;
 }
