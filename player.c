@@ -4,6 +4,8 @@
  *  Description: C program that handles player
  */
 
+// View declaration.h for more details
+ addd
 #include "support/message.h"
 
 void handle_player_join(GameMap *game_map, addr_t from, char *player_name)
@@ -145,7 +147,7 @@ void handle_player_move(GameMap *game_map, addr_t from, char *moveDirectionStr)
     // Check if the new position is within the bounds of the map and not occupied
     if (newRow >= 0 && newRow < game_map->mapSize && newCol >= 0 && newCol < game_map->mapSize && (game_map->grid[newRow][newCol] == '.' || game_map->grid[newRow][newCol] == '#'))
     { // Assuming '.' represents an open space
-    
+
         // Update player's position
         player->position[1] = newRow;
         player->position[0] = newCol;
