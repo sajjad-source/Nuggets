@@ -64,6 +64,7 @@ void handle_player_join(GameMap* game_map, addr_t from, char* player_name) {
             player->visible_grid[i][game_map->mapSize] = '\0'; // Null-terminate the string
         }
         playerID++; // Increment the playerID for the next player
+
     } else {
         printf("Max players reached. Cannot add more players.\n");
     }

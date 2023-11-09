@@ -105,28 +105,23 @@ GameMap *initialize_game(const char *map_filename, int seed)
     return gameMap;
 }
 
-char *serialize_map_with_players(GameMap *gameMap, addr_t from)
-{
+char* serialize_map_with_players(GameMap *gameMap, addr_t from) {
     // Calculate buffer size: one char for each cell plus one for each newline, plus one for the null terminator
     int bufferSize = gameMap->mapSize * (gameMap->mapSize + 1) + 100;
-    char *buffer = malloc(bufferSize);
-
-    if (buffer == NULL)
-    {
+    char* buffer = malloc(bufferSize);
+    
+    if (buffer == NULL) {
         perror("Error allocating buffer for serialization");
         return NULL;
     }
 
     // Create a copy of the map
-    char **tempMap = malloc(gameMap->mapSize * sizeof(char *));
-    for (int i = 0; i < gameMap->mapSize; i++)
-    {
+    char** tempMap = malloc(gameMap->mapSize * sizeof(char*));
+    for (int i = 0; i < gameMap->mapSize; i++) {
         tempMap[i] = strdup(gameMap->grid[i]); // Copy each row
-        if (tempMap[i] == NULL)
-        {
+        if (tempMap[i] == NULL) {
             // Handle allocation failure; free previously allocated strings and the array, then return NULL
-            for (int j = 0; j < i; j++)
-            {
+            for (int j = 0; j < i; j++) {
                 free(tempMap[j]);
             }
             free(tempMap);
@@ -142,40 +137,32 @@ char *serialize_map_with_players(GameMap *gameMap, addr_t from)
         {
             current_player = gameMap->players[i];
             calculate_visibility(gameMap, current_player); // Calculate visibility for the current player
-            break;
+            // break;
         }
     }
 
-    char *playerInfo = malloc(bufferSize); // Assuming this is enough space for the player info
+    char* playerInfo = malloc(bufferSize); // Assuming this is enough space for the player info
 
     // Overlay players' positions on the temporary map
-    for (int i = 0; i < 26; i++)
-    {
-        Player *player = gameMap->players[i];
-        if (player != NULL)
-        {
+    for (int i = 0; i < 26; i++) {
+        Player* player = gameMap->players[i];
+        if (player != NULL) {
             // Ensure the position is within the bounds of the map
             if (player->position[0] >= 0 && player->position[0] < gameMap->mapSize &&
-                player->position[1] >= 0 && player->position[1] < gameMap->mapSize)
-            {
-                if (!message_eqAddr(player->from, from))
-                {
+                player->position[1] >= 0 && player->position[1] < gameMap->mapSize) {
+                if (!message_eqAddr(player->from, from)) {
                     tempMap[player->position[1]][player->position[0]] = player->ID; // Use the player's ID as the character
-                }
-                else
-                {
+                } else {
                     tempMap[player->position[1]][player->position[0]] = '@'; // Use the player's ID as the character
                     snprintf(playerInfo, bufferSize, "Player %c has %d nuggets (%d nuggets unclaimed).\n",
-                             player->ID, player->gold_count, gameMap->goldLeft);
+                     player->ID, player->gold_count, gameMap->goldLeft);
                 }
             }
         }
     }
 
-    if (gameMap->players[26] != NULL)
-    {
-        if (message_eqAddr(from, gameMap->players[26]->from))
-        {
+    if (gameMap->players[26] != NULL) {
+        if (message_eqAddr(from, gameMap->players[26]->from)) {
             snprintf(playerInfo, bufferSize, "Spectator: %d nuggets unclaimed. Play at plank %d\n", gameMap->goldLeft, gameMap->port);
         }
     }
@@ -193,34 +180,46 @@ char *serialize_map_with_players(GameMap *gameMap, addr_t from)
     }
 
     char *p = buffer;
-    for (int y = 0; y < gameMap->mapSize; y++)
-    {
-        for (int x = 0; x < gameMap->mapSize; x++)
-        {
-            if (current_player != NULL && current_player->visible_grid[y][x] != ' ')
-            {
-                p[x] = tempMap[y][x]; // Place visible character from tempMap
-            }
-            else
-            {
-                p[x] = ' '; // If not visible, place a space
-            }
+
+    if (gameMap->players[26] != NULL && message_eqAddr(from, gameMap->players[26]->from)) {
+        for (int i = 0; i < gameMap->mapSize; i++) {
+            strncpy(p, tempMap[i], gameMap->mapSize + 1); // Copy each row including the newline
+            p += gameMap->mapSize + 1; // Move the pointer by the size of the row plus newline
         }
-        p += gameMap->mapSize; // Move the pointer by the size of the row
-        *p = '\n';             // Add newline at the end of each row
-        p++;                   // Move past the newline
+        *p = '\0'; // Null-terminate the buffer
+    } else {
+        for (int y = 0; y < gameMap->mapSize; y++)
+        {
+            for (int x = 0; x < gameMap->mapSize; x++)
+            {
+                if (current_player != NULL && current_player->visible_grid[y][x] != ' ')
+                {
+                    p[x] = tempMap[y][x]; // Place visible character from tempMap
+                }
+                else
+                {
+                p[x] = ' '; // If not visible, place a space
+                }
+            }   
+            p += gameMap->mapSize; // Move the pointer by the size of the row
+            *p = '\n';             // Add newline at the end of each row
+            p++;                   // Move past the newline
+        }
+        *p = '\0'; // Null-terminate the buffer
     }
-    *p = '\0'; // Null-terminate the buffer
+
 
     // Free the temporary map
-    for (int i = 0; i < gameMap->mapSize; i++)
-    {
+    for (int i = 0; i < gameMap->mapSize; i++) {
         free(tempMap[i]);
     }
     free(tempMap);
 
-    // Return the serialized buffer
-    return buffer;
+    strcat(playerInfo, buffer);
+
+    free(buffer);
+
+    return playerInfo; // Return the serialized buffer
 }
 
 // Visibility
