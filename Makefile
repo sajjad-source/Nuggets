@@ -16,9 +16,11 @@ VALGRIND = valgrind --leak-check=full --show-leak-kinds=all
 
 all: client server
 client:$(OBJS_client)
+	$(MAKE) -C ./support
 	$(CC) $(CFLAGS) $^ $(LIBS) -o client -lncurses
 
 server:$(OBJS_server)
+	$(MAKE) -C ./support
 	$(CC) $(CFLAGS) $^ $(LIBS) -o server
 
 
@@ -30,6 +32,7 @@ clean:
 	rm -f *~ *.o
 	rm -f server
 	rm -f client
+	$(MAKE) -C ./support
 
 
 # mygcc client.c ./support/message.c ./support/log.c -o client -lncurses
