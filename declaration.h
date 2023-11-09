@@ -91,7 +91,7 @@ void handle_player_join(GameMap *game_map, addr_t from, char *buf);
  *       Exit the loop after handling the gold pile
  *
  */
-void handle_player_move(GameMap *game_map, addr_t from, char *moveDirectionStr)
+void handle_player_move(GameMap *game_map, addr_t from, char *moveDirectionStr);
 
 
 /*==================== emptyspaces.c ====================*/
