@@ -5,7 +5,6 @@
  *          gold.c, gamemap.c
  */
 
-
 /*==================== server.c ====================*/
 /**************** handleMessage ****************/
 /**
@@ -157,7 +156,7 @@ void distribute_gold(GameMap *game_map, int goldTotal, int goldMinNumPiles, int 
  *   Read the map from the file
  *   Find empty spaces after loading the map
  *   distribute the gold
- * 
+ * j
  * RETURN:
  *  gamemap
  */
@@ -184,3 +183,59 @@ GameMap *initialize_game(const char *map_filename, int seed);
 char *serialize_map_with_players(GameMap *gameMap, addr_t from);
 
 
+/*==================== visibility ====================*/
+/**************** is_clear_path ****************/
+/**
+ * Checks if there is a clear path from the starting point to the ending point on the game map.
+ * Uses Bresenham's line algorithm to determine visibility.
+ * 
+ * Caller PROVIDES:
+ * 	valid GameMap pointer, start x, start y, end x, end y
+ *
+ * TODO:
+ *  Check if we've reached the target point
+ *      Check if the current position is a wall
+ *      If the wall is visible return true
+ *      else break (reached the target)
+ *  Check if the current position is a clear path
+ *      return false (not clear)
+ * 
+ * RETURN:
+ *  true (clear path)
+ */
+bool is_clear_path(GameMap* game_map, int start_x, int start_y, int end_x, int end_y);
+
+/**************** line_of_sight ****************/
+/**
+ * Checks if there is a line of sight between two points on the game map.
+ * 
+ * Caller PROVIDES:
+ * 	valid GameMap pointer, player row, player column, target row, target column
+ *
+ * TODO:
+ *  If directly adjacent spots are visible, return true
+ *  Check if there is a clear path to the target spot
+ * 
+ * RETURN:
+ *  true if adjacent spots are visible
+ */
+bool line_of_sight(GameMap *game_map, int player_row, int player_col, int target_row, int target_col);
+
+/**************** calculate_visibility ****************/
+/**
+ * Calculates the visibility for a player on the game map.
+ * 
+ * Caller PROVIDES:
+ * 	valid GameMap pointer, and player
+ *
+ * TODO:
+ *  Create a visible grid for the player with the same size as the game_map
+ *  Check visibility for every cell in the grid
+ *      For walls, check adjacent tiles as well as direct line of sight
+ *      Ensure that we don't check out of bounds or through corners
+ *          Diagonal checks are through corners, so we skip them
+ *          Break out of the inner loop on first visible
+ *      Break out of the outer loop if visible
+ *  For non-wall tiles, use direct line of sight check
+ */
+void calculate_visibility(GameMap* game_map, Player* player);
