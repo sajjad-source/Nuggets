@@ -1,7 +1,8 @@
-// server.c
-// Team 6
-// Date: Nov 8, 2023
-// Description: C program that
+/** server.c
+ *  Team 6
+ *  Date: Nov 8, 2023
+ *  Description: C program that 
+ */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -97,7 +98,7 @@ bool handleMessage(void *arg, const addr_t from, const char *buf)
 {
 
     GameMap *game_map = (GameMap *)arg; // cast argument to to gamemap
-    char *message = strdup(buf); // Duplicate the buffer to use with strtok
+    char *message = strdup(buf);        // Duplicate the buffer to use with strtok
 
     // confirm that duplication was successful
     if (message != NULL)
@@ -118,7 +119,7 @@ bool handleMessage(void *arg, const addr_t from, const char *buf)
         }
         else
         {
-            printf("Unknown command received.\n"); 
+            printf("Unknown command received.\n");
         }
 
         if (strcmp(command, "Move") == 0)
@@ -165,8 +166,6 @@ bool handleMessage(void *arg, const addr_t from, const char *buf)
 
     return false; // Continue the message loop
 }
-
-
 
 void game_over(GameMap *game_map)
 {

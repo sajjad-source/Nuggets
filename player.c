@@ -5,7 +5,7 @@
  */
 
 // View declaration.h for more details
- addd
+
 #include "support/message.h"
 
 void handle_player_join(GameMap *game_map, addr_t from, char *player_name)
