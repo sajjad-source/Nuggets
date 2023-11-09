@@ -75,6 +75,7 @@ int main(int argc, char* argv[]) {
 
     return 0;
 }
+
 bool handleMessage(void* arg, const addr_t from, const char* buf) {
     GameMap* game_map = (GameMap*)arg;
     char* message = strdup(buf); // Duplicate the buffer to use with strtok
