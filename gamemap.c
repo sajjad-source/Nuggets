@@ -1,3 +1,11 @@
+/** gamemap.c
+ *  Team 6
+ *  Date: Nov 8, 2023
+ *  Description: C program that handles the game map
+ */
+
+// View declaration.h for more details
+
 #include "emptyspaces.c"
 GameMap* initialize_game(const char* map_filename, int seed) {
 
@@ -78,6 +86,7 @@ GameMap* initialize_game(const char* map_filename, int seed) {
         fprintf(stderr, "No empty spaces found on the map.\n");
     }
 
+    // distribute the gold
     distribute_gold(gameMap, 250, 10, 30);
 
     fclose(fp);
