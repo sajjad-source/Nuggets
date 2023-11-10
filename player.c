@@ -85,9 +85,31 @@ void handle_player_join(GameMap* game_map, addr_t from, char* player_name) {
     }
 }
 
+// Function to handle collecting gold along the way
+void collect_gold(Player* player, int newRow, int newCol, GameMap* game_map) {
+    // If the new position is a gold pile, update the gold count and remove the pile
+    for (int i = 0; i < game_map->numGoldPiles; i++) {
+        if (game_map->gold_piles[i].position[0] == newCol && game_map->gold_piles[i].position[1] == newRow) {
+            // Increase player's gold count
+            player->gold_count += game_map->gold_piles[i].gold_count;
+            game_map->goldLeft -= game_map->gold_piles[i].gold_count;
+
+            // Remove the gold pile by swapping it with the last one in the array (if not already the last)
+            if (i < game_map->numGoldPiles - 1) {
+                game_map->gold_piles[i] = game_map->gold_piles[game_map->numGoldPiles - 1];
+            }
+
+            // Decrease the count of gold piles
+            game_map->numGoldPiles--;
+
+            printf("over gold");
+
+            break; // Exit the loop after handling the gold pile
+        }
+    }
+}
+
 void handle_player_move(GameMap* game_map, addr_t from, char* moveDirectionStr) {
-
-
     // Extract move direction from buf
     char moveDirection = moveDirectionStr[0];
 
@@ -112,44 +134,104 @@ void handle_player_move(GameMap* game_map, addr_t from, char* moveDirectionStr) 
     // Calculate new position based on move direction
     int newRow = player->position[1];
     int newCol = player->position[0];
+
+    // Determine whether the movement should be continuous or not
+    int step = (moveDirection >= 'A' && moveDirection <= 'Z') ? 1 : 0;
+
+    // Update player's position
     switch (moveDirection) {
         case 'h':
-        newCol--;
-        break; // Move left
+            newCol--;
+            break; // Move left
+        case 'H':
+            while (newCol - step >= 0 && (game_map->grid[newRow][newCol - step] == '.' || game_map->grid[newRow][newCol - step] == '#')) {
+                newCol -= step;
+                collect_gold(player, newRow, newCol, game_map);
+            }
+            break; // Move left until player hits a wall
         case 'l':
-        newCol++;
-        break; // Move right
+            newCol++;
+            break; // Move right
+        case 'L':
+            while (newCol + step < game_map->mapSize && (game_map->grid[newRow][newCol + step] == '.' || game_map->grid[newRow][newCol + step] == '#')) {
+                newCol += step;
+                collect_gold(player, newRow, newCol, game_map);
+            }
+            break; // Move right until player hits a wall
         case 'j':
-        newRow++;
-        break; // Move down
+            newRow++;
+            break; // Move down
+        case 'J':
+            while (newRow + step < game_map->mapSize && (game_map->grid[newRow + step][newCol] == '.' || game_map->grid[newRow + step][newCol] == '#')) {
+                newRow += step;
+                collect_gold(player, newRow, newCol, game_map);
+            }
+            break; // Move down until player hits a wall
         case 'k':
-        newRow--;
-        break; // Move up
+            newRow--;
+            break; // Move up
+        case 'K':
+            while (newRow - step >= 0 && (game_map->grid[newRow - step][newCol] == '.' || game_map->grid[newRow - step][newCol] == '#')) {
+                newRow -= step;
+                collect_gold(player, newRow, newCol, game_map);
+            }
+            break; // Move up until until player hits a wall
         case 'y':
-        newRow--;
-        newCol--;
-        break; // Move diagonally up-left
+            newRow--;
+            newCol--;
+            break; // Move diagonally up-left
+        case 'Y':
+            while (newRow - step >= 0 && newCol - step >= 0 && (game_map->grid[newRow - step][newCol - step] == '.' || game_map->grid[newRow - step][newCol - step] == '#')) {
+                newRow -= step;
+                newCol -= step;
+                collect_gold(player, newRow, newCol, game_map);
+            }
+            break; // Move diagonally up-left until player hits a wall
+
         case 'u':
-        newRow--;
-        newCol++;
-        break; // Move diagonally up-right
+            newRow--;
+            newCol++;
+            break; // Move diagonally up-right
+        case 'U':
+            while (newRow - step >= 0 && newCol - step >= 0 && (game_map->grid[newRow - step][newCol - step] == '.' || game_map->grid[newRow - step][newCol - step] == '#')) {
+                newRow -= step;
+                newCol += step;
+                collect_gold(player, newRow, newCol, game_map);
+            }
+            break; // Move diagonally up-right until player hits a wall
         case 'b':
-        newRow++;
-        newCol--;
-        break; // Move diagonally down-left
+            newRow++;
+            newCol--;
+            break; // Move diagonally down-left
+        case 'B':
+            while (newRow - step >= 0 && newCol - step >= 0 && (game_map->grid[newRow - step][newCol - step] == '.' || game_map->grid[newRow - step][newCol - step] == '#')) {
+                newRow += step;
+                newCol -= step;
+                collect_gold(player, newRow, newCol, game_map);
+            }
+            break; // Move diagonally down-left until player hits a wall
         case 'n':
-        newRow++;
-        newCol++;
-        break; // Move diagonally down-right
+            newRow++;
+            newCol++;
+            break; // Move diagonally down-right
+         case 'N':
+            while (newRow - step >= 0 && newCol - step >= 0 && (game_map->grid[newRow - step][newCol - step] == '.' || game_map->grid[newRow - step][newCol - step] == '#')) {
+                newRow += step;
+                newCol += step;
+                collect_gold(player, newRow, newCol, game_map);
+            }
+            break; // Move diagonally down-right until player hits a wall
+
         default:
             fprintf(stderr, "Invalid move direction %c.\n", moveDirection);
             return;
     }
 
     // Check if the new position is within the bounds of the map and not occupied
-    if (newRow >= 0 && newRow < game_map->mapSize && newCol >= 0 && newCol < game_map->mapSize && (game_map->grid[newRow][newCol] == '.' || game_map->grid[newRow][newCol] == '#')) { // Assuming '.' represents an open space
-        // Update player's position
+    if (newRow >= 0 && newRow < game_map->mapSize && newCol >= 0 && newCol < game_map->mapSize &&
+        (game_map->grid[newRow][newCol] == '.' || game_map->grid[newRow][newCol] == '#')) {
 
+        // Update player's position
         Player* player2 = NULL;
         for (int i = 0; i < 26; i++) {
             if (game_map->players[i] != NULL && !message_eqAddr(game_map->players[i]->from, from) && game_map->players[i]->position[0] != -1) {
@@ -164,30 +246,14 @@ void handle_player_move(GameMap* game_map, addr_t from, char* moveDirectionStr) 
         player->position[1] = newRow;
         player->position[0] = newCol;
 
-        // If the new position is a gold pile, update the gold count and remove the pile
-        for (int i = 0; i < game_map->numGoldPiles; i++) {
-            if (game_map->gold_piles[i].position[0] == newCol && game_map->gold_piles[i].position[1] == newRow) {
-                // Increase player's gold count
-                player->gold_count += game_map->gold_piles[i].gold_count;
-                game_map->goldLeft -= game_map->gold_piles[i].gold_count;
-
-                // Remove the gold pile by swapping it with the last one in the array (if not already the last)
-                if (i < game_map->numGoldPiles - 1) {
-                    game_map->gold_piles[i] = game_map->gold_piles[game_map->numGoldPiles - 1];
-                }
-
-                // Decrease the count of gold piles
-                game_map->numGoldPiles--;
-
-                printf("over gold");
-
-                break; // Exit the loop after handling the gold pile
-            }
-        }
+        collect_gold(player, newRow, newCol, game_map);
+        
     } else {
         fprintf(stderr, "Invalid move. Position out of bounds or occupied.\n");
     }
 }
+
+
 
 void handle_quit(GameMap* game_map, addr_t from) {
     // Find the player with the given ID
