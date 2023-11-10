@@ -7,12 +7,18 @@
 // View declaration.h for more details
 #include "math.h"
 #include "emptyspaces.c"
+#include <unistd.h>
 
 GameMap *initialize_game(const char *map_filename, int seed)
 {
 
     // Seed the random number generator
-    srand(seed);
+    if (seed == -1) {
+        srand(getpid());
+    } else {
+        srand(seed);
+    }
+    
 
     // Open the map file
     FILE *fp = fopen(map_filename, "r");

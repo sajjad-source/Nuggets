@@ -239,3 +239,5 @@ bool line_of_sight(GameMap *game_map, int player_row, int player_col, int target
  *  For non-wall tiles, use direct line of sight check
  */
 void calculate_visibility(GameMap* game_map, Player* player);
+
+void handle_quit(GameMap* game_map, addr_t from);

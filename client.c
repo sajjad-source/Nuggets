@@ -38,9 +38,9 @@ int main(const int argc, char* argv[]) {
     char playMsg[message_MaxBytes];
 
     if (argc == 3) {
-        snprintf(playMsg, sizeof(playMsg), "Join %s", "Spectator");
+        snprintf(playMsg, sizeof(playMsg), "PLAY %s", "Spectator");
     } else {
-        snprintf(playMsg, sizeof(playMsg), "Join %s", argv[3]);
+        snprintf(playMsg, sizeof(playMsg), "PLAY %s", argv[3]);
     }
 
     // Send the PLAY [name] message to the server
@@ -63,6 +63,7 @@ int main(const int argc, char* argv[]) {
 static bool handleInput(void* arg) {
     // arg is a pointer to the server's address
     addr_t* server = (addr_t*)arg;
+
     int ch = getch();
 
     if (ch != ERR) { // ERR if no key is pressed
@@ -72,9 +73,9 @@ static bool handleInput(void* arg) {
         char command[message_MaxBytes];
 
         if (ch == 'h' || ch == 'l' || ch == 'j' || ch == 'k' || ch == 'u' || ch == 'y' || ch == 'b' || ch == 'n') {
-            snprintf(command, sizeof(command), "Move %c", ch);
+            snprintf(command, sizeof(command), "KEY %c", ch);
         } else if (ch == 'q') {
-            return true;
+            snprintf(command, sizeof(command), "QUIT");
         } else {
             return false;
         }
@@ -89,6 +90,9 @@ static bool handleInput(void* arg) {
 
 /**************** handleMessage ****************/
 static bool handleMessage(void* arg, const addr_t from, const char* message) {
+
+
+    printf("TEST");
     // Clear the screen from the previous content
     clear();
 
@@ -106,8 +110,11 @@ static void init_ncurses(void) {
     cbreak();                // Line buffering disabled
     keypad(stdscr, TRUE);    // Get F1, F2, etc...
     noecho();                // Don't echo while we do getch
-    nodelay(stdscr, TRUE);   // Non-blocking getch
+    // nodelay(stdscr, TRUE);   // Non-blocking getch
     curs_set(0);             // Don't display a cursor
+    start_color();           // Start color functionality
+    init_pair(1, COLOR_YELLOW, COLOR_BLACK); // Initialize a color pair (pair number, foreground color, background color)
+    attron(COLOR_PAIR(1));   // Apply color pair to window
 }
 
 /**************** end_ncurses ****************/
