@@ -72,7 +72,8 @@ static bool handleInput(void* arg) {
         // Construct the Move [key] message
         char command[message_MaxBytes];
 
-        if (ch == 'h' || ch == 'l' || ch == 'j' || ch == 'k' || ch == 'u' || ch == 'y' || ch == 'b' || ch == 'n') {
+        if (ch == 'h' || ch == 'l' || ch == 'j' || ch == 'k' || ch == 'u' || ch == 'y' || ch == 'b' || ch == 'n'
+        || ch == 'H' || ch == 'L' || ch == 'J' || ch == 'K' || ch == 'U' || ch == 'Y' || ch == 'B' || ch == 'N') {
             snprintf(command, sizeof(command), "KEY %c", ch);
         } else if (ch == 'q') {
             snprintf(command, sizeof(command), "QUIT");
@@ -86,7 +87,6 @@ static bool handleInput(void* arg) {
 
     return false;
 }
-
 
 /**************** handleMessage ****************/
 static bool handleMessage(void* arg, const addr_t from, const char* message) {
