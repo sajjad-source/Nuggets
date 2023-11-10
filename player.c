@@ -10,6 +10,17 @@
 
 void handle_player_join(GameMap* game_map, addr_t from, char* player_name) {
 
+    Player* player = NULL;
+    for (int i = 0; i < 26; i++) {
+        if (game_map->players[i] && message_eqAddr(game_map->players[i]->from, from)) {
+            player = game_map->players[i];
+            break;
+        }
+    }
+    if (player != NULL) {
+        return;
+    }
+
     if (strcmp(player_name, "Spectator") == 0) {
 
         Player* player = malloc(sizeof(Player));
@@ -21,6 +32,10 @@ void handle_player_join(GameMap* game_map, addr_t from, char* player_name) {
         strcpy(player->name, player_name);
 
         player->from = from; // Assign the address from which the player joined
+
+        if (game_map->players[26] != NULL) {
+            message_send(game_map->players[26]->from, "QUIT You have been replaced by a new spectator.");
+        }
 
         game_map->players[26] = player;
 
@@ -66,11 +81,12 @@ void handle_player_join(GameMap* game_map, addr_t from, char* player_name) {
         playerID++; // Increment the playerID for the next player
 
     } else {
-        printf("Max players reached. Cannot add more players.\n");
+        message_send(from, "QUIT Game is full: no more players can join.\n");
     }
 }
 
 void handle_player_move(GameMap* game_map, addr_t from, char* moveDirectionStr) {
+
 
     // Extract move direction from buf
     char moveDirection = moveDirectionStr[0];
@@ -80,6 +96,9 @@ void handle_player_move(GameMap* game_map, addr_t from, char* moveDirectionStr) 
     for (int i = 0; i < 26; i++) {
         if (game_map->players[i] && message_eqAddr(game_map->players[i]->from, from)) {
             player = game_map->players[i];
+            if (player != NULL && player->position[0] == -1) {
+                return;
+            }
             break;
         }
     }
@@ -130,6 +149,18 @@ void handle_player_move(GameMap* game_map, addr_t from, char* moveDirectionStr) 
     // Check if the new position is within the bounds of the map and not occupied
     if (newRow >= 0 && newRow < game_map->mapSize && newCol >= 0 && newCol < game_map->mapSize && (game_map->grid[newRow][newCol] == '.' || game_map->grid[newRow][newCol] == '#')) { // Assuming '.' represents an open space
         // Update player's position
+
+        Player* player2 = NULL;
+        for (int i = 0; i < 26; i++) {
+            if (game_map->players[i] != NULL && !message_eqAddr(game_map->players[i]->from, from) && game_map->players[i]->position[0] != -1) {
+                player2 = game_map->players[i];
+                if (player2->position[1] == newRow && player2->position[0] == newCol) {
+                    player2->position[0] = player->position[0];
+                    player2->position[1] = player->position[1];
+                }
+                break;
+            }
+        }
         player->position[1] = newRow;
         player->position[0] = newCol;
 
@@ -156,4 +187,25 @@ void handle_player_move(GameMap* game_map, addr_t from, char* moveDirectionStr) 
     } else {
         fprintf(stderr, "Invalid move. Position out of bounds or occupied.\n");
     }
+}
+
+void handle_quit(GameMap* game_map, addr_t from) {
+    // Find the player with the given ID
+    Player* player = NULL;
+    for (int i = 0; i <= 26; i++) {
+        if (game_map->players[i] != NULL && message_eqAddr(game_map->players[i]->from, from)) {
+            player = game_map->players[i];
+            if (player != NULL) {
+                player->position[0] = -1;
+                player->position[1] = -1;
+            }
+            if (i == 26) {
+                message_send(from, "QUIT Thanks for watching!");
+            } else {
+                message_send(from, "QUIT Thanks for playing!");
+            }
+            break;
+        }
+    }
+
 }

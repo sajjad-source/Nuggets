@@ -22,12 +22,17 @@ void distribute_gold(GameMap* game_map, int goldTotal, int goldMinNumPiles, int 
     int remainingGold = goldTotal;
     for (int i = 0; i < numPiles; i++) {
         // Ensure each pile gets at least 1 gold piece
-        int goldInPile = (remainingGold > (numPiles - i)) ? (1 + rand() % (remainingGold - (numPiles - i) + 1)) : 1;
-        game_map->gold_piles[i].gold_count = goldInPile;
-        remainingGold -= goldInPile;
+        if (numPiles - i != 1) {
+            int goldInPile = (remainingGold > (numPiles - i)) ? (1 + rand() % (remainingGold - (numPiles - i) + 1)) : 1;
+            game_map->gold_piles[i].gold_count = goldInPile;
+            remainingGold -= goldInPile;
+        } else {
+            game_map->gold_piles[i].gold_count = remainingGold;
+            remainingGold -= remainingGold;
+        }
     }
 
-    printf("This is gold remainging: %d\n", remainingGold);
+    // printf("This is gold remainging: %d\n", remainingGold);
 
     // Place gold piles on the map
     for (int i = 0; i < numPiles; i++) {
