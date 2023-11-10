@@ -181,7 +181,8 @@ char* serialize_map_with_players(GameMap *gameMap, addr_t from) {
         if (goldPile.position[0] >= 0 && goldPile.position[0] < gameMap->mapSize &&
             goldPile.position[1] >= 0 && goldPile.position[1] < gameMap->mapSize)
         {
-            tempMap[goldPile.position[1]][goldPile.position[0]] = '*';
+            if (line_of_sight(gameMap, current_player->position[0], current_player->position[1], goldPile.position[0], goldPile.position[1]))
+                tempMap[goldPile.position[1]][goldPile.position[0]] = '*';
         }
     }
 
