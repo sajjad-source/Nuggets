@@ -234,13 +234,13 @@ void handle_player_move(GameMap* game_map, addr_t from, char* moveDirectionStr) 
         // Update player's position
         Player* player2 = NULL;
         for (int i = 0; i < 26; i++) {
-            if (game_map->players[i] != NULL && !message_eqAddr(game_map->players[i]->from, from) && game_map->players[i]->position[0] != -1) {
+            if (game_map->players[i] != NULL && !message_eqAddr(game_map->players[i]->from, from)) {
                 player2 = game_map->players[i];
                 if (player2->position[1] == newRow && player2->position[0] == newCol) {
                     player2->position[0] = player->position[0];
                     player2->position[1] = player->position[1];
                 }
-                break;
+                continue;
             }
         }
         player->position[1] = newRow;
