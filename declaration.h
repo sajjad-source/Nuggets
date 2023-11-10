@@ -92,6 +92,8 @@ void handle_player_join(GameMap *game_map, addr_t from, char *buf);
  */
 void handle_player_move(GameMap *game_map, addr_t from, char *moveDirectionStr);
 
+// Function to handle collecting gold along the way
+void collect_gold(Player* player, int newRow, int newCol, GameMap* game_map);
 
 /*==================== emptyspaces.c ====================*/
 /**************** find_empty_spaces ****************/
