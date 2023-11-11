@@ -5,11 +5,15 @@
 #include "support/message.h"
 #include <ncurses.h>
 
+#define MIN_COLS 200  // Minimum number of columns required
+#define MIN_ROWS 100  // Minimum number of rows required
+
 /**************** file-local functions ****************/
 static bool handleInput(void* arg);
 static bool handleMessage(void* arg, const addr_t from, const char* message);
 static void init_ncurses(void);
 static void end_ncurses(void);
+static bool checkWindowSize(void);
 
 /***************** main *******************************/
 int main(const int argc, char* argv[]) {
@@ -24,15 +28,24 @@ int main(const int argc, char* argv[]) {
         return 3; // Bad command line
     }
 
+    // Initialize ncurses
+    init_ncurses();
+
+    // Check if the window size is sufficient
+    if (!checkWindowSize()) {
+        // Inform the user about the necessary window size
+        printw("Enlarge the window to at least %dx%d and press any key to continue...", MIN_COLS, MIN_ROWS);
+        refresh();
+        getch();  // Wait for user input
+        clear();   // Clear the message
+    }
+
     // Command line provides address for the server
     addr_t server; // Address of the server
     if (!message_setAddr(argv[1], argv[2], &server)) {
         fprintf(stderr, "Can't form address from %s %s\n", argv[1], argv[2]);
         return 4; // Bad hostname/port
     }
-
-    // Initialize ncurses
-    init_ncurses();
 
     // Construct the PLAY [name] message
     char playMsg[message_MaxBytes];
@@ -59,6 +72,14 @@ int main(const int argc, char* argv[]) {
     return ok ? 0 : 1; // Status code depends on result of message_loop
 }
 
+/**************** checkWindowSize ****************/
+static bool checkWindowSize(void) {
+    int rows, cols;
+    getmaxyx(stdscr, rows, cols);
+
+    return rows >= MIN_ROWS && cols >= MIN_COLS;
+}
+
 /**************** handleInput ****************/
 static bool handleInput(void* arg) {
     // arg is a pointer to the server's address
@@ -73,14 +94,14 @@ static bool handleInput(void* arg) {
         char command[message_MaxBytes];
 
         if (ch == 'h' || ch == 'l' || ch == 'j' || ch == 'k' || ch == 'u' || ch == 'y' || ch == 'b' || ch == 'n'
-        || ch == 'H' || ch == 'L' || ch == 'J' || ch == 'K' || ch == 'U' || ch == 'Y' || ch == 'B' || ch == 'N') {
+            || ch == 'H' || ch == 'L' || ch == 'J' || ch == 'K' || ch == 'U' || ch == 'Y' || ch == 'B' || ch == 'N') {
             snprintf(command, sizeof(command), "KEY %c", ch);
         } else if (ch == 'q') {
             snprintf(command, sizeof(command), "QUIT");
         } else {
             return false;
         }
-        
+
         // Send the command to the server
         message_send(*server, command);
     }
@@ -90,9 +111,6 @@ static bool handleInput(void* arg) {
 
 /**************** handleMessage ****************/
 static bool handleMessage(void* arg, const addr_t from, const char* message) {
-
-
-    printf("TEST");
     // Clear the screen from the previous content
     clear();
 
@@ -110,7 +128,7 @@ static void init_ncurses(void) {
     cbreak();                // Line buffering disabled
     keypad(stdscr, TRUE);    // Get F1, F2, etc...
     noecho();                // Don't echo while we do getch
-    nodelay(stdscr, TRUE);   // Non-blocking getch
+    // nodelay(stdscr, TRUE);   // Non-blocking getch
     curs_set(0);             // Don't display a cursor
     start_color();           // Start color functionality
     init_pair(1, COLOR_YELLOW, COLOR_BLACK); // Initialize a color pair (pair number, foreground color, background color)
