@@ -78,6 +78,24 @@ void handle_player_join(GameMap* game_map, addr_t from, char* player_name) {
             memset(player->visible_grid[i], ' ', game_map->mapSizeR);
             player->visible_grid[i][game_map->mapSizeR] = '\0'; // Null-terminate the string
         }
+
+        // Check if player spawns on a gold pile, if so, collect it and spawn the player.
+        for (int i = 0; i < game_map->numGoldPiles; i++) {
+            if (game_map->gold_piles[i].position[0] == player->position[0] &&
+                game_map->gold_piles[i].position[1] == player->position[1]) {
+                
+                // Player spawns on a gold pile, collect the gold
+                player->gold_count += game_map->gold_piles[i].gold_count;
+                game_map->goldLeft -= game_map->gold_piles[i].gold_count;
+
+                // Remove the gold pile
+                if (i < game_map->numGoldPiles - 1) {
+                    game_map->gold_piles[i] = game_map->gold_piles[game_map->numGoldPiles - 1];
+                }
+                game_map->numGoldPiles--;
+                break; // Gold pile found and processed, break out of the loop
+            }
+        }
         playerID++; // Increment the playerID for the next player
 
     } else {
