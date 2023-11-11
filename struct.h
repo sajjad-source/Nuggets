@@ -1,31 +1,36 @@
 #include "support/message.h"
 
 // Major Data Structures
-typedef struct {
+typedef struct
+{
     char ID;
     char name[50];
     int position[2];
     int gold_count;
-    char** visible_grid;
+    int gold_picked;
+    char **visible_grid;
     addr_t from;
 } Player;
 
-typedef struct {
+typedef struct
+{
     int position[2];
     int gold_count;
 } GoldPile;
 
-typedef struct {
+typedef struct
+{
     int x;
     int y;
 } Empty;
 
-typedef struct {
-    char** grid;
-    GoldPile* gold_piles;
+typedef struct
+{
+    char **grid;
+    GoldPile *gold_piles;
     int emptySpaceCount;
-    Empty* emptySpaces;
-    Player* players[27];
+    Empty *emptySpaces;
+    Player *players[27];
     int mapSizeR;
     int mapSizeC;
     int numGoldPiles;
@@ -33,9 +38,7 @@ typedef struct {
     int port;
 } GameMap;
 
-
 static int playerID = 0;
 char characters[] = {
     'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M',
-    'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'
-};
+    'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'};

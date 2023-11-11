@@ -32,6 +32,7 @@ void handle_player_join(GameMap* game_map, addr_t from, char* player_name) {
         strcpy(player->name, player_name);
 
         player->from = from; // Assign the address from which the player joined
+        player->gold_picked = 0;
 
         if (game_map->players[26] != NULL) {
             message_send(game_map->players[26]->from, "QUIT You have been replaced by a new spectator.");
@@ -58,6 +59,7 @@ void handle_player_join(GameMap* game_map, addr_t from, char* player_name) {
 
         // Initialize other fields if necessary
         player->gold_count = 0;
+        player->gold_picked = 0;
 
         if (game_map->emptySpaceCount > 0) {
             int randomIndex = rand() % game_map->emptySpaceCount;
@@ -110,6 +112,7 @@ void collect_gold(Player* player, int newRow, int newCol, GameMap* game_map) {
         if (game_map->gold_piles[i].position[0] == newCol && game_map->gold_piles[i].position[1] == newRow) {
             // Increase player's gold count
             player->gold_count += game_map->gold_piles[i].gold_count;
+            player->gold_picked += game_map->gold_piles[i].gold_count;
             game_map->goldLeft -= game_map->gold_piles[i].gold_count;
 
             // Remove the gold pile by swapping it with the last one in the array (if not already the last)

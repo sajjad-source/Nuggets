@@ -176,8 +176,14 @@ char* serialize_map_with_players(GameMap *gameMap, addr_t from) {
                     tempMap[player->position[1]][player->position[0]] = player->ID; // Use the player's ID as the character
                 } else {
                     tempMap[player->position[1]][player->position[0]] = '@'; // Use the player's ID as the character
-                    snprintf(playerInfo, bufferSize, "Player %c has %d nuggets (%d nuggets unclaimed).\n",
-                     player->ID, player->gold_count, gameMap->goldLeft);
+                    if (player->gold_picked > 0) {
+                        snprintf(playerInfo, bufferSize, "Player %c has %d nuggets (%d nuggets unclaimed). Gold received: %d\n",
+                        player->ID, player->gold_count, gameMap->goldLeft, player->gold_picked);
+                        player->gold_picked = 0;
+                    } else {
+                        snprintf(playerInfo, bufferSize, "Player %c has %d nuggets (%d nuggets unclaimed).\n",
+                        player->ID, player->gold_count, gameMap->goldLeft);
+                    }
                 }
             }
         }
