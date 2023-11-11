@@ -1,3 +1,9 @@
+/** server.c
+ *  Team 6
+ *  Date: Nov 8, 2023
+ *  Description: C program that implements the client side of a multiplayer game [nugget].
+ */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
