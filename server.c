@@ -1,7 +1,7 @@
 /** server.c
  *  Team 6
  *  Date: Nov 8, 2023
- *  Description: C program that 
+ *  Description: C program that implements the server side of a multiplayer game.
  */
 
 #define _GNU_SOURCE
