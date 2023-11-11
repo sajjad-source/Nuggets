@@ -6,6 +6,7 @@ typedef struct {
     char name[50];
     int position[2];
     int gold_count;
+    int gold_picked; 
     char** visible_grid;
     addr_t from;
 } Player;
