@@ -197,9 +197,9 @@ char* serialize_map_with_players(GameMap *gameMap, addr_t from) {
         if (goldPile.position[0] >= 0 && goldPile.position[0] < gameMap->mapSizeR &&
             goldPile.position[1] >= 0 && goldPile.position[1] < gameMap->mapSizeC)
         {
-            if (!message_eqAddr(gameMap->players[26]->from, from) && line_of_sight(gameMap, current_player->position[0], current_player->position[1], goldPile.position[0], goldPile.position[1])) {
+            if (gameMap->players[26] != NULL && message_eqAddr(gameMap->players[26]->from, from)) {
                 tempMap[goldPile.position[1]][goldPile.position[0]] = '*';
-            } else if (message_eqAddr(gameMap->players[26]->from, from)) {
+            } else if (line_of_sight(gameMap, current_player->position[0], current_player->position[1], goldPile.position[0], goldPile.position[1])) {
                 tempMap[goldPile.position[1]][goldPile.position[0]] = '*';
             }
         }
