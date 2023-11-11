@@ -10,17 +10,19 @@ void distribute_gold(GameMap* game_map, int goldTotal, int goldMinNumPiles, int 
     // Calculate map area
     int mapArea = game_map->mapSizeR * game_map->mapSizeC;
 
-    // Define a maximum gold pile density (e.g., one pile per every 10 spaces)
-    int maxDensity = 10;
+    // Define a scaling factor based on map size (e.g., mapArea / 100)
+    // This factor will help determine the number of gold piles relative to map size
+    float scalingFactor = (float)mapArea / 100;
 
-    // Calculate the maximum number of gold piles based on map size and density
-    int maxPilesBasedOnSize = mapArea / maxDensity;
+    // Calculate a proportional number of gold piles based on map size
+    int proportionalPiles = (int)(scalingFactor * goldMaxNumPiles);
+    proportionalPiles = (proportionalPiles < goldMinNumPiles) ? goldMinNumPiles : proportionalPiles;
+    proportionalPiles = (proportionalPiles > goldMaxNumPiles) ? goldMaxNumPiles : proportionalPiles;
 
-    // Determine the number of gold piles (considering the map size)
-    int numPiles = goldMinNumPiles + rand() % (goldMaxNumPiles - goldMinNumPiles + 1);
-    numPiles = (numPiles < maxPilesBasedOnSize) ? numPiles : maxPilesBasedOnSize;
-    numPiles = (numPiles < game_map->emptySpaceCount) ? numPiles : game_map->emptySpaceCount;
+    // Determine the final number of gold piles, ensuring it doesn't exceed empty spaces
+    int numPiles = (proportionalPiles < game_map->emptySpaceCount) ? proportionalPiles : game_map->emptySpaceCount;
 
+    // Allocate memory for the gold piles
     game_map->gold_piles = malloc(numPiles * sizeof(GoldPile));
     if (game_map->gold_piles == NULL) {
         perror("Error allocating memory for gold piles");
