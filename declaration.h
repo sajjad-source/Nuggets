@@ -188,19 +188,24 @@ void distribute_gold(GameMap *game_map, int goldTotal, int goldMinNumPiles, int 
  * TODO:
  *  Seed the random number generator
  *  Open the map file
- *  Assuming the map is always square, count the number of characters until a newline
+ *  Count the number of characters until a newline
  *  Rewind to the start of the file to read the grid
  *  Allocate memory for the GameMap structure
+ *  Set the size of the map
  *  Allocate memory for the grid
+ *  Allocate memory for each row in the grid
  * 
  *   Read the map from the file
  *   Find empty spaces after loading the map
+ *   Check if there are no empty spaces on the map
  *   distribute the gold
- * j
+ * 
  * RETURN:
  *  gamemap
  */
 GameMap *initialize_game(const char *map_filename, int seed);
+
+
 /**************** serialize_map_with_players ****************/
 /**
  * Caller provides:
@@ -229,7 +234,7 @@ char *serialize_map_with_players(GameMap *gameMap, addr_t from);
  * Checks if there is a clear path from the starting point to the ending point on the game map.
  * Uses Bresenham's line algorithm to determine visibility.
  * 
- * Caller PROVIDES:
+ * Caller provides:
  * 	valid GameMap pointer, start x, start y, end x, end y
  *
  * TODO:
@@ -245,11 +250,12 @@ char *serialize_map_with_players(GameMap *gameMap, addr_t from);
  */
 bool is_clear_path(GameMap* game_map, int start_x, int start_y, int end_x, int end_y);
 
+
 /**************** line_of_sight ****************/
 /**
  * Checks if there is a line of sight between two points on the game map.
  * 
- * Caller PROVIDES:
+ * Caller provides:
  * 	valid GameMap pointer, player row, player column, target row, target column
  *
  * TODO:
@@ -261,11 +267,12 @@ bool is_clear_path(GameMap* game_map, int start_x, int start_y, int end_x, int e
  */
 bool line_of_sight(GameMap *game_map, int player_row, int player_col, int target_row, int target_col);
 
+
 /**************** calculate_visibility ****************/
 /**
  * Calculates the visibility for a player on the game map.
  * 
- * Caller PROVIDES:
+ * Caller provides:
  * 	valid GameMap pointer, and player
  *
  * TODO:
