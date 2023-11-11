@@ -110,7 +110,7 @@ static void init_ncurses(void) {
     cbreak();                // Line buffering disabled
     keypad(stdscr, TRUE);    // Get F1, F2, etc...
     noecho();                // Don't echo while we do getch
-    // nodelay(stdscr, TRUE);   // Non-blocking getch
+    nodelay(stdscr, TRUE);   // Non-blocking getch
     curs_set(0);             // Don't display a cursor
     start_color();           // Start color functionality
     init_pair(1, COLOR_YELLOW, COLOR_BLACK); // Initialize a color pair (pair number, foreground color, background color)
