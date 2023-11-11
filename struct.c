@@ -26,7 +26,8 @@ typedef struct {
     int emptySpaceCount;
     Empty* emptySpaces;
     Player* players[27];
-    int mapSize;
+    int mapSizeR;
+    int mapSizeC;
     int numGoldPiles;
     int goldLeft;
     int port;

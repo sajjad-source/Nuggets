@@ -29,11 +29,26 @@ GameMap *initialize_game(const char *map_filename, int seed)
     }
 
     // Assuming the map is always square, count the number of characters until a newline
-    int size = 0; // This will be the size for both rows and columns
-    while (fgetc(fp) != '\n')
+    // int size = 0; // This will be the size for both rows and columns
+
+    int row = 0;
+    int col = 0;
+
+    bool checkRow = true;
+
+    char c;
+    while ((c = fgetc(fp)) != EOF)
     {
-        size++;
+        if (c != '\n' && checkRow) {
+            row++;
+        } else if (c == '\n') {
+            checkRow = false;
+            col++;
+        }
     }
+
+    printf("Row: %d, Col: %d", row, col);
+
 
     // Rewind to the start of the file to read the grid
     rewind(fp);
@@ -47,10 +62,11 @@ GameMap *initialize_game(const char *map_filename, int seed)
         return NULL;
     }
 
-    gameMap->mapSize = size;
+    gameMap->mapSizeR = row;
+    gameMap->mapSizeC = col;
 
     // Allocate memory for the grid
-    gameMap->grid = malloc(size * sizeof(char *));
+    gameMap->grid = malloc(gameMap->mapSizeC * sizeof(char*));
     if (gameMap->grid == NULL)
     {
         perror("Error allocating memory for grid");
@@ -59,9 +75,9 @@ GameMap *initialize_game(const char *map_filename, int seed)
         return NULL;
     }
 
-    for (int i = 0; i < size; i++)
+    for (int i = 0; i < col; i++)
     {
-        gameMap->grid[i] = malloc((size + 2) * sizeof(char)); // +1 for new line and null terminator
+        gameMap->grid[i] = malloc((row + 2) * sizeof(char)); // +1 for new line and null terminator
         if (gameMap->grid[i] == NULL)
         {
             // Handle error, free previously allocated memory
@@ -77,23 +93,23 @@ GameMap *initialize_game(const char *map_filename, int seed)
     }
 
     // Read the map from the file
-    char lineBuffer[size + 2]; // +2 for newline and null terminator
-    for (int i = 0; i < size && fgets(lineBuffer, sizeof(lineBuffer), fp) != NULL; i++)
+    char lineBuffer[row + 2]; // +2 for newline and null terminator
+    for (int i = 0; i < col && fgets(lineBuffer, sizeof(lineBuffer), fp) != NULL; i++)
     {
-        if (i == size - 1)
+        if (i == col - 1)
         {
-            strncpy(gameMap->grid[i], lineBuffer, size + 1);
-            gameMap->grid[i][size] = '\0'; // Ensure null termination
+            strncpy(gameMap->grid[i], lineBuffer, row + 1);
+            gameMap->grid[i][row] = '\0'; // Ensure null termination
             break;
         }
-        strncpy(gameMap->grid[i], lineBuffer, size + 2);
-        gameMap->grid[i][size] = '\n';     // Ensure null termination
-        gameMap->grid[i][size + 1] = '\0'; // Ensure null termination
+        strncpy(gameMap->grid[i], lineBuffer, row + 2);
+        gameMap->grid[i][row] = '\n';     // Ensure null termination
+        gameMap->grid[i][row + 1] = '\0'; // Ensure null termination
     }
 
     // Find empty spaces after loading the map
     int emptySpaceCount;
-    Empty *emptySpaces = find_empty_spaces(gameMap->grid, gameMap->mapSize, &emptySpaceCount);
+    Empty *emptySpaces = find_empty_spaces(gameMap->grid, gameMap->mapSizeC, gameMap->mapSizeR, &emptySpaceCount);
 
     gameMap->emptySpaceCount = emptySpaceCount;
 
@@ -113,7 +129,7 @@ GameMap *initialize_game(const char *map_filename, int seed)
 
 char* serialize_map_with_players(GameMap *gameMap, addr_t from) {
     // Calculate buffer size: one char for each cell plus one for each newline, plus one for the null terminator
-    int bufferSize = gameMap->mapSize * (gameMap->mapSize + 1) + 100;
+    int bufferSize = gameMap->mapSizeC * (gameMap->mapSizeR + 1) + 100;
     char* buffer = malloc(bufferSize);
     
     if (buffer == NULL) {
@@ -122,8 +138,8 @@ char* serialize_map_with_players(GameMap *gameMap, addr_t from) {
     }
 
     // Create a copy of the map
-    char** tempMap = malloc(gameMap->mapSize * sizeof(char*));
-    for (int i = 0; i < gameMap->mapSize; i++) {
+    char** tempMap = malloc(gameMap->mapSizeC * sizeof(char*));
+    for (int i = 0; i < gameMap->mapSizeC; i++) {
         tempMap[i] = strdup(gameMap->grid[i]); // Copy each row
         if (tempMap[i] == NULL) {
             // Handle allocation failure; free previously allocated strings and the array, then return NULL
@@ -154,8 +170,8 @@ char* serialize_map_with_players(GameMap *gameMap, addr_t from) {
         Player* player = gameMap->players[i];
         if (player != NULL) {
             // Ensure the position is within the bounds of the map
-            if (player->position[0] >= 0 && player->position[0] < gameMap->mapSize &&
-                player->position[1] >= 0 && player->position[1] < gameMap->mapSize) {
+            if (player->position[0] >= 0 && player->position[0] < gameMap->mapSizeR &&
+                player->position[1] >= 0 && player->position[1] < gameMap->mapSizeC) {
                 if (!message_eqAddr(player->from, from)) {
                     tempMap[player->position[1]][player->position[0]] = player->ID; // Use the player's ID as the character
                 } else {
@@ -178,8 +194,8 @@ char* serialize_map_with_players(GameMap *gameMap, addr_t from) {
     { // Assuming numGoldPiles is the number of gold piles
         GoldPile goldPile = gameMap->gold_piles[i];
         // Ensure the position is within the bounds of the map
-        if (goldPile.position[0] >= 0 && goldPile.position[0] < gameMap->mapSize &&
-            goldPile.position[1] >= 0 && goldPile.position[1] < gameMap->mapSize)
+        if (goldPile.position[0] >= 0 && goldPile.position[0] < gameMap->mapSizeR &&
+            goldPile.position[1] >= 0 && goldPile.position[1] < gameMap->mapSizeC)
         {
             if (line_of_sight(gameMap, current_player->position[0], current_player->position[1], goldPile.position[0], goldPile.position[1]))
                 tempMap[goldPile.position[1]][goldPile.position[0]] = '*';
@@ -189,15 +205,15 @@ char* serialize_map_with_players(GameMap *gameMap, addr_t from) {
     char *p = buffer;
 
     if (gameMap->players[26] != NULL && message_eqAddr(from, gameMap->players[26]->from)) {
-        for (int i = 0; i < gameMap->mapSize; i++) {
-            strncpy(p, tempMap[i], gameMap->mapSize + 1); // Copy each row including the newline
-            p += gameMap->mapSize + 1; // Move the pointer by the size of the row plus newline
+        for (int i = 0; i < gameMap->mapSizeC; i++) {
+            strncpy(p, tempMap[i], gameMap->mapSizeR + 1); // Copy each row including the newline
+            p += gameMap->mapSizeR + 1; // Move the pointer by the size of the row plus newline
         }
         *p = '\0'; // Null-terminate the buffer
     } else {
-        for (int y = 0; y < gameMap->mapSize; y++)
+        for (int y = 0; y < gameMap->mapSizeC; y++)
         {
-            for (int x = 0; x < gameMap->mapSize; x++)
+            for (int x = 0; x < gameMap->mapSizeR; x++)
             {
                 if (current_player != NULL && current_player->visible_grid[y][x] != ' ')
                 {
@@ -208,7 +224,7 @@ char* serialize_map_with_players(GameMap *gameMap, addr_t from) {
                 p[x] = ' '; // If not visible, place a space
                 }
             }   
-            p += gameMap->mapSize; // Move the pointer by the size of the row
+            p += gameMap->mapSizeR; // Move the pointer by the size of the row
             *p = '\n';             // Add newline at the end of each row
             p++;                   // Move past the newline
         }
@@ -217,7 +233,7 @@ char* serialize_map_with_players(GameMap *gameMap, addr_t from) {
 
 
     // Free the temporary map
-    for (int i = 0; i < gameMap->mapSize; i++) {
+    for (int i = 0; i < gameMap->mapSizeC; i++) {
         free(tempMap[i]);
     }
     free(tempMap);
@@ -290,9 +306,9 @@ bool line_of_sight(GameMap *game_map, int player_row, int player_col, int target
 void calculate_visibility(GameMap *game_map, Player *player)
 {
     // Check visibility for every cell in the grid
-    for (int y = 0; y < game_map->mapSize; y++)
+    for (int y = 0; y < game_map->mapSizeC; y++)
     {
-        for (int x = 0; x < game_map->mapSize; x++)
+        for (int x = 0; x < game_map->mapSizeR; x++)
         {
             // For walls, check adjacent tiles as well as direct line of sight
             if (game_map->grid[y][x] == '-' || game_map->grid[y][x] == '|' || game_map->grid[y][x] == '+')
@@ -305,7 +321,7 @@ void calculate_visibility(GameMap *game_map, Player *player)
                         int checkX = x + dx;
                         int checkY = y + dy;
                         // Ensure that we don't check out of bounds or through corners
-                        if (checkY >= 0 && checkY < game_map->mapSize && checkX >= 0 && checkX < game_map->mapSize)
+                        if (checkY >= 0 && checkY < game_map->mapSizeC && checkX >= 0 && checkX < game_map->mapSizeR)
                         {
                             // Diagonal checks are through corners, so we skip them
                             if (dx != 0 && dy != 0)

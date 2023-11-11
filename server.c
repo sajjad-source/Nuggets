@@ -66,7 +66,7 @@ int main(int argc, char* argv[]) {
         }
     }
     
-    for (int j = 0; j < game_map->mapSize; j++) {
+    for (int j = 0; j < game_map->mapSizeC; j++) {
         free(game_map->grid[j]);
     }
     free(game_map->grid);
