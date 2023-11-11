@@ -113,7 +113,6 @@ bool handleMessage(void* arg, const addr_t from, const char* buf) {
             // Use serialize_map_with_players to account for players on the map
             if (game_map->players[i]->position[0] != -1) {
                 char* serializedMap = serialize_map_with_players(game_map, game_map->players[i]->from);
-                printf("Serioalized MAP: %s", serializedMap);
                 if (serializedMap != NULL) {
                     message_send(game_map->players[i]->from, serializedMap);
                     free(serializedMap);
