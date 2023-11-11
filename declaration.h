@@ -116,7 +116,7 @@ void collect_gold(Player* player, int newRow, int newCol, GameMap* game_map);
  *  RETURN:
  *      Array of empty space coordinates
  */
-Empty *find_empty_spaces(char **grid, int size, int *count);
+Empty* find_empty_spaces(char** grid, int row, int col, int* count);
 
 /*==================== gold.c ====================*/
 /**************** distribute gold ****************/

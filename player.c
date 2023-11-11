@@ -72,11 +72,11 @@ void handle_player_join(GameMap* game_map, addr_t from, char* player_name) {
         printf("Player %s joined with ID %c\n", player_name, player->ID);
         game_map->players[playerID] = player;
         
-        player->visible_grid = malloc(game_map->mapSize * sizeof(char*));
-        for (int i = 0; i < game_map->mapSize; i++) {
-            player->visible_grid[i] = malloc((game_map->mapSize + 1) * sizeof(char));
-            memset(player->visible_grid[i], ' ', game_map->mapSize);
-            player->visible_grid[i][game_map->mapSize] = '\0'; // Null-terminate the string
+        player->visible_grid = malloc(game_map->mapSizeC * sizeof(char*));
+        for (int i = 0; i < game_map->mapSizeC; i++) {
+            player->visible_grid[i] = malloc((game_map->mapSizeR + 1) * sizeof(char));
+            memset(player->visible_grid[i], ' ', game_map->mapSizeR);
+            player->visible_grid[i][game_map->mapSizeR] = '\0'; // Null-terminate the string
         }
         playerID++; // Increment the playerID for the next player
 
@@ -153,7 +153,7 @@ void handle_player_move(GameMap* game_map, addr_t from, char* moveDirectionStr) 
             newCol++;
             break; // Move right
         case 'L':
-            while (newCol + step < game_map->mapSize && (game_map->grid[newRow][newCol + step] == '.' || game_map->grid[newRow][newCol + step] == '#')) {
+            while (newCol + step < game_map->mapSizeC && (game_map->grid[newRow][newCol + step] == '.' || game_map->grid[newRow][newCol + step] == '#')) {
                 newCol += step;
                 collect_gold(player, newRow, newCol, game_map);
             }
@@ -162,7 +162,7 @@ void handle_player_move(GameMap* game_map, addr_t from, char* moveDirectionStr) 
             newRow++;
             break; // Move down
         case 'J':
-            while (newRow + step < game_map->mapSize && (game_map->grid[newRow + step][newCol] == '.' || game_map->grid[newRow + step][newCol] == '#')) {
+            while (newRow + step < game_map->mapSizeR && (game_map->grid[newRow + step][newCol] == '.' || game_map->grid[newRow + step][newCol] == '#')) {
                 newRow += step;
                 collect_gold(player, newRow, newCol, game_map);
             }
@@ -228,7 +228,7 @@ void handle_player_move(GameMap* game_map, addr_t from, char* moveDirectionStr) 
     }
 
     // Check if the new position is within the bounds of the map and not occupied
-    if (newRow >= 0 && newRow < game_map->mapSize && newCol >= 0 && newCol < game_map->mapSize &&
+    if (newRow >= 0 && newRow < game_map->mapSizeC && newCol >= 0 && newCol < game_map->mapSizeR &&
         (game_map->grid[newRow][newCol] == '.' || game_map->grid[newRow][newCol] == '#')) {
 
         // Update player's position
