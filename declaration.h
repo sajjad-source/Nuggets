@@ -164,19 +164,20 @@ Empty* find_empty_spaces(char** grid, int row, int col, int* count);
  * 	valid GameMap pointer, total gold, minimum gold piles and max gold piles
  *
  * TODO:
- *  Determine the number of gold piles
+ *  Calculate map area
+ *  Define a scaling factor based on map size (e.g., mapArea / 100)
+ *  This factor will help determine the number of gold piles relative to map size
+ *  Calculate a proportional number of gold piles based on map size
+ *  Determine the final number of gold piles, ensuring it doesn't exceed empty spaces
  *  Allocate memory for the gold piles
  *  Distribute gold among the piles: Ensure each pile gets at least 1 gold piece
+ *  Distribute the remaining gold
+ *  Shuffle the empty spaces to randomize gold pile placement
  *  Place gold piles on the map
- *      Select a random empty space index
- *      Assign the position of the gold pile to the randomly selected empty space
- *      Swap the selected empty space with the last one in the array and decrease the count
- *  Update the game map with the number of gold piles and the total gold remaining
- * 
- *  RETURN:
- *      Array of empty space coordinates
+ *  Update the game map's gold-related attributes
  */
 void distribute_gold(GameMap *game_map, int goldTotal, int goldMinNumPiles, int goldMaxNumPiles);
+
 
 /*==================== gamemap.c ====================*/
 /**************** initialize_game ****************/
