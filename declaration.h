@@ -131,6 +131,7 @@ void handle_player_move(GameMap *game_map, addr_t from, char *moveDirectionStr);
  */
 void handle_quit(GameMap* game_map, addr_t from);
 
+
 /*==================== emptyspaces.c ====================*/
 /**************** find_empty_spaces ****************/
 /** 
@@ -145,7 +146,6 @@ void handle_quit(GameMap* game_map, addr_t from);
  *  Iterate through each cell in the grid to find empty spaces
  *      Check if the current cell is an empty space ('.')
  *           Store the coordinates of the empty space in the array
- *           Store the coordinates of the empty space in the array 
  *           Increment the count of empty spaces
  *      Shrink the array to the number of empty spaces found
  * 
@@ -153,6 +153,7 @@ void handle_quit(GameMap* game_map, addr_t from);
  *      Array of empty space coordinates
  */
 Empty* find_empty_spaces(char** grid, int row, int col, int* count);
+
 
 /*==================== gold.c ====================*/
 /**************** distribute gold ****************/
