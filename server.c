@@ -22,33 +22,31 @@ int main(int argc, char* argv[]) {
         return 1;
     }
     
-    // Initialize the messaging system and start listening on a port
     int port = message_init(stderr);
     if (port == 0) {
         fprintf(stderr, "Failed to initialize messaging system.\n");
         return 1;
     }
 
-    // Load the game map and initialize the game state
-    GameMap* game_map;
-    if (argc == 3 && atoi(argv[2]) > 0) {
-        game_map = initialize_game(argv[1], atoi(argv[2]));
+    int seed;
+    if (argc == 3) {
+        seed = atoi(argv[2]);
+        if (seed <= 0) {
+            fprintf(stderr, "Seed must be a positive integer.\n");
+            return 1;
+        }
     } else {
-        game_map = initialize_game(argv[1], -1);
+        seed = getpid();  // Use process ID as seed if not provided
     }
 
+    GameMap* game_map = initialize_game(argv[1], seed);
     if (game_map == NULL) {
         fprintf(stderr, "Failed to initialize game.\n");
         return 1;
     }
 
-    // for (int i = 0; i < game_map->mapSize; i++) {
-    //     printf("%s", game_map->grid[i]);
-    // }
-
     game_map->port = port;
     
-    // Start the message loop, passing in handlers for different message types
     message_loop(game_map, 0, NULL, NULL, handleMessage);
 
     // Cleanup
