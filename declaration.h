@@ -12,7 +12,7 @@
  * 	valid argc, valid addr_t pointer, buffer
  *
  * TODO:
- * 	Cast the argument to the GameMap pointer
+ * 	Initialize game
  *  Duplicate the message buffer to use with strtok
  *  Check if the duplication was successful
  *      Extract the command from the message
