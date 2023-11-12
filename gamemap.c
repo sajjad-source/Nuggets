@@ -313,22 +313,26 @@ void calculate_visibility(GameMap *game_map, Player *player)
     {
         for (int x = 0; x < game_map->mapSizeR; x++)
         {
-            // For walls, check adjacent tiles as well as direct line of sight
-            if (game_map->grid[y][x] == '-' || game_map->grid[y][x] == '|' || game_map->grid[y][x] == '+')
+            bool visible = false;
+            char currentCell = game_map->grid[y][x];
+
+            // For walls, corners, and non-wall tiles, use original logic
+            if (currentCell == '-' || currentCell == '|' || currentCell == '+')
             {
-                bool visible = false;
                 for (int dy = -1; dy <= 1; dy++)
                 {
                     for (int dx = -1; dx <= 1; dx++)
                     {
                         int checkX = x + dx;
                         int checkY = y + dy;
+
                         // Ensure that we don't check out of bounds or through corners
                         if (checkY >= 0 && checkY < game_map->mapSizeC && checkX >= 0 && checkX < game_map->mapSizeR)
                         {
                             // Diagonal checks are through corners, so we skip them
                             if (dx != 0 && dy != 0)
                                 continue;
+
                             if (line_of_sight(game_map, player->position[0], player->position[1], checkX, checkY))
                             {
                                 visible = true;
@@ -339,15 +343,43 @@ void calculate_visibility(GameMap *game_map, Player *player)
                     if (visible)
                         break; // Break out of the outer loop if visible
                 }
-                if (visible)
-                {
-                    player->visible_grid[y][x] = game_map->grid[y][x];
-                }
             }
-            // For non-wall tiles, use direct line of sight check
             else if (line_of_sight(game_map, player->position[0], player->position[1], x, y))
             {
-                player->visible_grid[y][x] = game_map->grid[y][x];
+                visible = true;
+            }
+
+            // Additional check to ensure no adjacent corners are visible
+            if (visible && currentCell == '+')
+            {
+                for (int dy = -1; dy <= 1; dy++)
+                {
+                    for (int dx = -1; dx <= 1; dx++)
+                    {
+                        // Skip checking the current cell
+                        if (dx == 0 && dy == 0) continue;
+
+                        int adjacentX = x + dx;
+                        int adjacentY = y + dy;
+
+                        // Check for out of bounds
+                        if (adjacentY >= 0 && adjacentY < game_map->mapSizeC && adjacentX >= 0 && adjacentX < game_map->mapSizeR)
+                        {
+                            // Check for adjacent corner visibility
+                            if (game_map->grid[adjacentY][adjacentX] == '+' && line_of_sight(game_map, player->position[0], player->position[1], adjacentX, adjacentY))
+                            {
+                                visible = false; // Make current corner invisible
+                                break;
+                            }
+                        }
+                    }
+                    if (!visible) break;
+                }
+            }
+
+            if (visible)
+            {
+                player->visible_grid[y][x] = currentCell;
             }
         }
     }
