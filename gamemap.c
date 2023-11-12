@@ -4,23 +4,23 @@
  *  Description: C program that handles the game map
  */
 
-// View declaration.h for more details
 #include "math.h"
 #include "emptyspaces.c"
 #include <unistd.h>
 
+// View declaration.h for more details
+
+// initializes the game map based on the provided map file and seed.
 GameMap *initialize_game(const char *map_filename, int seed)
 {
-
-    // Seed the random number generator
+    // seed the random number generator
     if (seed == -1) {
         srand(getpid());
     } else {
         srand(seed);
     }
-    
 
-    // Open the map file
+    // open the map file
     FILE *fp = fopen(map_filename, "r");
     if (fp == NULL)
     {
@@ -28,9 +28,8 @@ GameMap *initialize_game(const char *map_filename, int seed)
         return NULL;
     }
 
-    // Assuming the map is always square, count the number of characters until a newline
+    // count the number of characters until a newline
     // int size = 0; // This will be the size for both rows and columns
-
     int row = 0;
     int col = 0;
 
@@ -49,11 +48,10 @@ GameMap *initialize_game(const char *map_filename, int seed)
 
     printf("Row: %d, Col: %d", row, col);
 
-
-    // Rewind to the start of the file to read the grid
+    // rewind to the start of the file to read the grid
     rewind(fp);
 
-    // Allocate memory for the GameMap structure
+    // allocate memory for the GameMap structure
     GameMap *gameMap = malloc(sizeof(GameMap));
     if (gameMap == NULL)
     {
@@ -62,10 +60,11 @@ GameMap *initialize_game(const char *map_filename, int seed)
         return NULL;
     }
 
+    // set the size of the map
     gameMap->mapSizeR = row;
     gameMap->mapSizeC = col;
 
-    // Allocate memory for the grid
+    // allocate memory for the grid
     gameMap->grid = malloc(gameMap->mapSizeC * sizeof(char*));
     if (gameMap->grid == NULL)
     {
@@ -75,12 +74,13 @@ GameMap *initialize_game(const char *map_filename, int seed)
         return NULL;
     }
 
+    // allocate memory for each row in the grid
     for (int i = 0; i < col; i++)
     {
         gameMap->grid[i] = malloc((row + 2) * sizeof(char)); // +1 for new line and null terminator
         if (gameMap->grid[i] == NULL)
         {
-            // Handle error, free previously allocated memory
+            // handle error, free previously allocated memory
             for (int j = 0; j < i; j++)
             {
                 free(gameMap->grid[j]);
@@ -92,29 +92,29 @@ GameMap *initialize_game(const char *map_filename, int seed)
         }
     }
 
-    // Read the map from the file
+    // read the map from the file
     char lineBuffer[row + 2]; // +2 for newline and null terminator
     for (int i = 0; i < col && fgets(lineBuffer, sizeof(lineBuffer), fp) != NULL; i++)
     {
         if (i == col - 1)
         {
             strncpy(gameMap->grid[i], lineBuffer, row + 1);
-            gameMap->grid[i][row] = '\0'; // Ensure null termination
+            gameMap->grid[i][row] = '\0'; // ensure null termination
             break;
         }
         strncpy(gameMap->grid[i], lineBuffer, row + 2);
-        gameMap->grid[i][row] = '\n';     // Ensure null termination
-        gameMap->grid[i][row + 1] = '\0'; // Ensure null termination
+        gameMap->grid[i][row] = '\n';     // ensure null termination
+        gameMap->grid[i][row + 1] = '\0'; // ensure null termination
     }
 
-    // Find empty spaces after loading the map
+    // find empty spaces after loading the map
     int emptySpaceCount;
     Empty *emptySpaces = find_empty_spaces(gameMap->grid, gameMap->mapSizeC, gameMap->mapSizeR, &emptySpaceCount);
 
     gameMap->emptySpaceCount = emptySpaceCount;
-
     gameMap->emptySpaces = emptySpaces;
 
+    // check if there are no empty spaces on the map
     if (emptySpaceCount == 0)
     {
         fprintf(stderr, "No empty spaces found on the map.\n");
@@ -122,13 +122,14 @@ GameMap *initialize_game(const char *map_filename, int seed)
 
     distribute_gold(gameMap, 250, 10, 30);
 
-    fclose(fp);
+    fclose(fp); // close map
 
     return gameMap;
 }
 
+// serializes the game map with player information.
 char* serialize_map_with_players(GameMap *gameMap, addr_t from) {
-    // Calculate buffer size: one char for each cell plus one for each newline, plus one for the null terminator
+    // calculate buffer size: one char for each cell plus one for each newline, plus one for the null terminator
     int bufferSize = gameMap->mapSizeC * (gameMap->mapSizeR + 1) + 100;
     char* buffer = malloc(bufferSize);
     
@@ -176,8 +177,14 @@ char* serialize_map_with_players(GameMap *gameMap, addr_t from) {
                     tempMap[player->position[1]][player->position[0]] = player->ID; // Use the player's ID as the character
                 } else {
                     tempMap[player->position[1]][player->position[0]] = '@'; // Use the player's ID as the character
-                    snprintf(playerInfo, bufferSize, "Player %c has %d nuggets (%d nuggets unclaimed).\n",
-                     player->ID, player->gold_count, gameMap->goldLeft);
+                    if (player->gold_picked > 0) {
+                        snprintf(playerInfo, bufferSize, "Player %c has %d nuggets (%d nuggets unclaimed). Gold received: %d\n",
+                        player->ID, player->gold_count, gameMap->goldLeft, player->gold_picked);
+                        player->gold_picked = 0;
+                    } else {
+                        snprintf(playerInfo, bufferSize, "Player %c has %d nuggets (%d nuggets unclaimed).\n",
+                        player->ID, player->gold_count, gameMap->goldLeft);
+                    }
                 }
             }
         }
