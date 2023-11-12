@@ -2,20 +2,21 @@
  *  Team 6
  *  Date: Nov 8, 2023
  *  Description: C program that implements the server side of a multiplayer game [nugget].
- */
+*/
 
 #define _GNU_SOURCE
+#include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include "support/message.h"
-#include "struct.h"
-#include "player.c"
-#include "declaration.h"
-#include "gamemap.c"
-#include "gold.c"
+#include "player.h"
+#include "emptyspaces.h"
+#include "server.h"
+#include "gold.h"
+#include "gamemap.h"
 
-// Declared the functions in declaration.h
+// Declared the functions in server.h
 
 int main(int argc, char* argv[]) {
 
@@ -97,7 +98,7 @@ bool handleMessage(void* arg, const addr_t from, const char* buf) {
         char* command = strtok(message, " ");
 
         // handle 'join' command - player & spectator
-        if (command != NULL && strcmp(command, "PLAY") == 0) {
+        if (command != NULL && (strcmp(command, "PLAY") == 0 || strcmp(command, "SPECTATE") == 0)) {
             char* playerName = strtok(NULL, " ");
             if (playerName != NULL && strcmp(playerName, "Spectator") != 0) {
                 // client joins as a player

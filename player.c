@@ -4,10 +4,21 @@
  *  Description: C program that handles player
  */
 
-// View declaration.h for more details
-
+#include <string.h>
+#include <stdlib.h>
 #include "message.h"
-#include "declaration.h"
+#include "player.h"
+#include "gamemap.h"
+
+// View player.h for more details
+
+// static variable to assign unique IDs to players
+static int playerID = 0;
+
+// array of characters to assign IDs to players
+char characters[] = {
+    'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M',
+    'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'};
 
 // handle player/ spectator join
 void handle_player_join(GameMap* game_map, addr_t from, char* player_name) {

@@ -2,13 +2,19 @@
  *  Team 6
  *  Date: Nov 8, 2023
  *  Description: C program that handles the game map
- */
+*/
 
-#include "math.h"
-#include "emptyspaces.c"
+#define _POSIX_C_SOURCE 200809L 
+#include <string.h>
+#include <stdlib.h>
 #include <unistd.h>
+#include "math.h"
+#include "emptyspaces.h"
+#include "gamemap.h"
+#include "player.h"
+#include "gold.h"
 
-// View declaration.h for more details
+// View gamemap.h for more details
 
 // initializes the game map based on the provided map file and seed.
 GameMap *initialize_game(const char *map_filename, int seed)

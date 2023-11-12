@@ -3,7 +3,7 @@
 # Date: Nov 8, 2023
 # Description: makefile for client and server
 
-OBJS_server = server.o 
+OBJS_server = server.o player.o gold.o  emptyspaces.o gamemap.o
 OBJS_client = client.o
 LIBS = ./support/support.a
 	
@@ -21,11 +21,15 @@ client:$(OBJS_client)
 
 server:$(OBJS_server)
 	$(MAKE) -C ./support
-	$(CC) $(CFLAGS) $^ $(LIBS) -o server
+	$(CC) $(CFLAGS) $^ $(LIBS) -o server 
 
 
 client.o: client.c ./support/message.c ./support/log.c 
 server.o: server.c ./support/message.h ./support/log.h 
+player.o: player.h player.c struct.h ./support/message.h ./support/log.h
+gold.o: gold.c gold.h struct.h
+gamemap.o: gamemap.c gamemap.h struct.h
+emptyspaces.o: emptyspaces.c emptyspaces.h struct.h
 
 clean:
 	rm -rf *.dSYM  # MacOS debugger info
@@ -34,5 +38,3 @@ clean:
 	rm -f client
 	$(MAKE) -C ./support
 
-
-# mygcc client.c ./support/message.c ./support/log.c -o client -lncurses
