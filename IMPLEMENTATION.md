@@ -1,6 +1,6 @@
 # CS50 Nuggets
 ## Implementation Spec
-### Team 6, CS50, 2023
+### Team 6: Jack, Sajjad, Kasuti, CS50, Fall 2023
 
 
 ## OVERVIEW
