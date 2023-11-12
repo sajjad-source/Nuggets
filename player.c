@@ -6,7 +6,8 @@
 
 // View declaration.h for more details
 
-#include "support/message.h"
+#include "message.h"
+#include "declaration.h"
 
 // handle player/ spectator join
 void handle_player_join(GameMap* game_map, addr_t from, char* player_name) {
@@ -187,15 +188,20 @@ void handle_player_move(GameMap* game_map, addr_t from, char* moveDirectionStr) 
         case 'H':
             while (newCol - step >= 0 && (game_map->grid[newRow][newCol - step] == '.' || game_map->grid[newRow][newCol - step] == '#')) {
                 newCol -= step;
+                player->position[0] = newCol;
+                calculate_visibility(game_map, player);
                 collect_gold(player, newRow, newCol, game_map);
+                
             }
             break; // Move left until player hits a wall
         case 'l':
             newCol++;
             break; // Move right
         case 'L':
-            while (newCol + step < game_map->mapSizeC && (game_map->grid[newRow][newCol + step] == '.' || game_map->grid[newRow][newCol + step] == '#')) {
+            while (((newCol + step) < (game_map->mapSizeR)) && (game_map->grid[newRow][newCol + step] == '.' || game_map->grid[newRow][newCol + step] == '#')) {
                 newCol += step;
+                player->position[0] = newCol;
+                calculate_visibility(game_map, player);
                 collect_gold(player, newRow, newCol, game_map);
             }
             break; // Move right until player hits a wall
@@ -203,8 +209,10 @@ void handle_player_move(GameMap* game_map, addr_t from, char* moveDirectionStr) 
             newRow++;
             break; // Move down
         case 'J':
-            while (newRow + step < game_map->mapSizeR && (game_map->grid[newRow + step][newCol] == '.' || game_map->grid[newRow + step][newCol] == '#')) {
+            while (newRow + step < game_map->mapSizeC && (game_map->grid[newRow + step][newCol] == '.' || game_map->grid[newRow + step][newCol] == '#')) {
                 newRow += step;
+                player->position[1] = newRow;
+                calculate_visibility(game_map, player);
                 collect_gold(player, newRow, newCol, game_map);
             }
             break; // Move down until player hits a wall
@@ -214,6 +222,8 @@ void handle_player_move(GameMap* game_map, addr_t from, char* moveDirectionStr) 
         case 'K':
             while (newRow - step >= 0 && (game_map->grid[newRow - step][newCol] == '.' || game_map->grid[newRow - step][newCol] == '#')) {
                 newRow -= step;
+                player->position[1] = newRow;
+                calculate_visibility(game_map, player);
                 collect_gold(player, newRow, newCol, game_map);
             }
             break; // Move up until until player hits a wall
@@ -225,6 +235,9 @@ void handle_player_move(GameMap* game_map, addr_t from, char* moveDirectionStr) 
             while (newRow - step >= 0 && newCol - step >= 0 && (game_map->grid[newRow - step][newCol - step] == '.' || game_map->grid[newRow - step][newCol - step] == '#')) {
                 newRow -= step;
                 newCol -= step;
+                player->position[0] = newCol;
+                player->position[1] = newRow;
+                calculate_visibility(game_map, player);
                 collect_gold(player, newRow, newCol, game_map);
             }
             break; // Move diagonally up-left until player hits a wall
@@ -234,9 +247,12 @@ void handle_player_move(GameMap* game_map, addr_t from, char* moveDirectionStr) 
             newCol++;
             break; // Move diagonally up-right
         case 'U':
-            while (newRow - step >= 0 && newCol - step >= 0 && (game_map->grid[newRow - step][newCol - step] == '.' || game_map->grid[newRow - step][newCol - step] == '#')) {
+            while (newRow - step >= 0 && ((newCol + step) < (game_map->mapSizeR)) && (game_map->grid[newRow - step][newCol + step] == '.' || game_map->grid[newRow - step][newCol + step] == '#')) {
                 newRow -= step;
                 newCol += step;
+                player->position[0] = newCol;
+                player->position[1] = newRow;
+                calculate_visibility(game_map, player);
                 collect_gold(player, newRow, newCol, game_map);
             }
             break; // Move diagonally up-right until player hits a wall
@@ -245,9 +261,12 @@ void handle_player_move(GameMap* game_map, addr_t from, char* moveDirectionStr) 
             newCol--;
             break; // Move diagonally down-left
         case 'B':
-            while (newRow - step >= 0 && newCol - step >= 0 && (game_map->grid[newRow - step][newCol - step] == '.' || game_map->grid[newRow - step][newCol - step] == '#')) {
+            while ((newRow + step < game_map->mapSizeC) && newCol - step >= 0 && (game_map->grid[newRow + step][newCol - step] == '.' || game_map->grid[newRow + step][newCol - step] == '#')) {
                 newRow += step;
                 newCol -= step;
+                player->position[0] = newCol;
+                player->position[1] = newRow;
+                calculate_visibility(game_map, player);
                 collect_gold(player, newRow, newCol, game_map);
             }
             break; // Move diagonally down-left until player hits a wall
@@ -256,9 +275,12 @@ void handle_player_move(GameMap* game_map, addr_t from, char* moveDirectionStr) 
             newCol++;
             break; // Move diagonally down-right
          case 'N':
-            while (newRow - step >= 0 && newCol - step >= 0 && (game_map->grid[newRow - step][newCol - step] == '.' || game_map->grid[newRow - step][newCol - step] == '#')) {
+            while ((newRow + step < game_map->mapSizeC) && ((newCol + step) < (game_map->mapSizeR)) && (game_map->grid[newRow + step][newCol + step] == '.' || game_map->grid[newRow + step][newCol + step] == '#')) {
                 newRow += step;
                 newCol += step;
+                player->position[0] = newCol;
+                player->position[1] = newRow;
+                calculate_visibility(game_map, player);
                 collect_gold(player, newRow, newCol, game_map);
             }
             break; // Move diagonally down-right until player hits a wall
