@@ -19,28 +19,28 @@ static void end_ncurses(void);
 
 /***************** main *******************************/
 int main(const int argc, char* argv[]) {
-    // Initialize the message module (without logging)
+    // initialize the message module (without logging)
     if (message_init(NULL) == 0) {
-        return 2; // Failure to initialize message module
+        return 2; // failure to initialize message module
     }
 
-    // Check arguments
-    if (argc != 4 && argc != 3) { // Expecting one more argument for player's name
+    // check arguments
+    if (argc != 4 && argc != 3) { // expecting one more argument for player's name
         fprintf(stderr, "usage: %s hostname port [playername]\n", argv[0]);
         return 3; // Bad command line
     }
 
-    // Command line provides address for the server
+    // command line provides address for the server
     addr_t server; // Address of the server
     if (!message_setAddr(argv[1], argv[2], &server)) {
         fprintf(stderr, "Can't form address from %s %s\n", argv[1], argv[2]);
         return 4; // Bad hostname/port
     }
 
-    // Initialize ncurses
+    // initialize ncurses
     init_ncurses();
 
-    // Construct the PLAY [name] message
+    // construct the PLAY [name] message
     char playMsg[message_MaxBytes];
 
     if (argc == 3) {
@@ -49,14 +49,14 @@ int main(const int argc, char* argv[]) {
         snprintf(playMsg, sizeof(playMsg), "PLAY %s", argv[3]);
     }
 
-    // Send the PLAY [name] message to the server
+    // send the PLAY [name] message to the server
     message_send(server, playMsg);
 
-    // Loop, waiting for input or for messages; provide callback functions.
-    // We use the 'arg' parameter to carry a pointer to 'server'.
+    // loop, waiting for input or for messages; provide callback functions.
+    // we use the 'arg' parameter to carry a pointer to 'server'.
     bool ok = message_loop(&server, 0, NULL, handleInput, handleMessage);
 
-    // End ncurses session
+    // end ncurses session
     end_ncurses();
 
     // Shut down the message module
@@ -64,6 +64,7 @@ int main(const int argc, char* argv[]) {
 
     return ok ? 0 : 1; // Status code depends on result of message_loop
 }
+
 
 /**************** handleInput ****************/
 static bool handleInput(void* arg) {
@@ -94,6 +95,12 @@ static bool handleInput(void* arg) {
     return false;
 }
 
+/*
+Clear the screen from the previous content
+Print message to client
+Refresh the screen to show the new content
+
+*/
 /**************** handleMessage ****************/
 static bool handleMessage(void* arg, const addr_t from, const char* message) {
 

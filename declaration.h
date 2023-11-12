@@ -213,7 +213,7 @@ GameMap *initialize_game(const char *map_filename, int seed);
  *
  * TODO:
  *  Calculate buffer size: one char for each cell plus one for each newline, 
- * `plus one for the null terminator
+ *  plus one for the null terminator
  *  Create a copy of the map
  *      Handle allocation failure
  *  Overlay players' positions on the temporary map

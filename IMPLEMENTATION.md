@@ -77,7 +77,6 @@ typedef struct
 } GameMap;
 ```
 
-
 ### Definition of function prototypes
 
 ## SERVER
@@ -101,7 +100,166 @@ bool line_of_sight(GameMap *game_map, int player_row, int player_col, int target
 void calculate_visibility(GameMap* game_map, Player* player);
 ```
 
+### Detailed pseudo code
+
+Our server-side code is distributed across several files; `server.c`, `player.c`, `gold.c`, `gamemap.c`, and `emptyspaces.c`.
+
+#### server.c
+
+### handleMessage
+    Initialize game
+        Duplicate the message buffer to use with strtok
+        Check if the duplication was successful
+            Extract the command from the message
+            Handle the "Join" command
+            Handle the "Move" command
+        Update and send the serialized map to all players
+            Serialize the map with players and send it to each player
+        Check if all gold is collected, and end the game if true
+    return false to continue the message loop
+
+### game_over
+    Create a buffer to store the game over message
+        Initialize the buffer
+        Concatenate the initial game over message
+        Iterate through players and append their information to the game over message
+        Send the game over message to all players
+
+#### player.c
+
+### handle_player_join
+    Check if the player already exists by matching the 'from' address
+        If the player already exists, do nothing 
+        Case when a spectator joins
+            Allocate memory for a new spectator player
+            Initialize the spectator's attributes
+            If there was an existing spectator, inform them about replacement
+            Add the spectator player to the last slot in the players array
+        Case when a player joins
+            Check if there is space for a new player
+            Allocate memory for a new player
+            Initialize the new player's attributes
+            Place the player on a random empty space on the map
+            Update the game map with the new player
+            Allocate memory for the player's visible grid
+            Check if player spawns on a gold pile, if so, collect it and spawn the player
+            Increment the playerID for the next player
+        else: Inform the player that the game is full
+
+### collect_gold
+    If the new position is a gold pile, update the gold count and remove the pile
+        Check if the new position matches the position of a gold pile
+            Increase player's gold count and the amount of gold picked up
+            Decrease the overall count of gold left in the game
+            Remove the gold pile by swapping it with the last one in the array (if not already the last)
+        Decrease the count of gold piles on the map
+
+### handle_player_move
+    Extract move direction from the buffer
+        Find the player with the given ID
+        If the player is not found, print an error and return
+        Calculate new position based on move direction
+        Determine whether the movement should be continuous or not
+        Update player's position while collecting gold
+            h - left, l - right, j - down, k - up
+            y - diagonally up-left u - diagonally up-right, 
+            b - diagonally down-left n - diagonally down-right
+        Check if the new position is within the bounds of the map and not occupied
+            Update player's position
+            Collect gold at the new position
+        else: Invalid move
+
+### handle_quit
+    find the player with the given ID
+        if the player is found, update their position to indicate they have quit
+        send the quit message to player / spectator
+
+
+### emptyspaces.c
+
+### find_empty_spaces
+    Allocate memory for an array to store empty space coordinates
+        Initialize the count of empty spaces to zero
+        Iterate through each cell in the grid to find empty spaces
+            Check if the current cell is an empty space ('.')
+                Store the coordinates of the empty space in the array
+                Increment the count of empty spaces
+            Shrink the array to the number of empty spaces found
+    return an array of empty space coordinates
+
+### gold.c
+
+### distribute_gold
+    Calculate map area
+        Define a scaling factor based on map size (e.g., mapArea / 100)
+        This factor will help determine the number of gold piles relative to map size
+        Calculate a proportional number of gold piles based on map size
+        Determine the final number of gold piles, ensuring it doesn't exceed empty spaces
+        Allocate memory for the gold piles
+        Distribute gold among the piles: Ensure each pile gets at least 1 gold piece
+        Distribute the remaining gold
+        Shuffle the empty spaces to randomize gold pile placement
+        Place gold piles on the map
+        Update the game map's gold-related attributes
+
+### gamemap.c
+
+### initialize_game
+    Seed the random number generator
+        Open the map file
+        Count the number of characters until a newline
+        Rewind to the start of the file to read the grid
+        Allocate memory for the GameMap structure
+        Set the size of the map
+        Allocate memory for the grid
+        Allocate memory for each row in the grid
+        Read the map from the file
+        Find empty spaces after loading the map
+        Check if there are no empty spaces on the map
+        distribute the gold
+    return gamemap
+
+### serialize_map_with_players
+    Calculate buffer size: one char for each cell plus one for each newline, 
+        plus one for the null terminator
+        Create a copy of the map
+            Handle allocation failure
+        Overlay players' positions on the temporary map
+        Overlay gold piles positions on the temporary map
+        Serialize the temporary map into the buffer
+        Free the temporary map
+    return serialized buffer [playerInfo]
+
+
+### is_clear_path
+    Check if we've reached the target point
+        Check if the current position is a wall
+            If the wall is visible return true
+            else break (reached the target)
+        Check if the current position is a clear path
+            return false (not clear)
+    return true if path is clear
+
+
+### line_of_sight
+    If directly adjacent spots are visible, return true
+    Check if there is a clear path to the target spot
+    return true if adjacent spots are visible
+
+
+### calculate_visibility
+    Create a visible grid for the player with the same size as the game_map
+        Check visibility for every cell in the grid
+            For walls, check adjacent tiles as well as direct line of sight
+            Ensure that we don't check out of bounds or through corners
+                Diagonal checks are through corners, so we skip them
+                Break out of the inner loop on first visible
+            Break out of the outer loop if visible
+        For non-wall tiles, use direct line of sight check
+
 ## CLIENT
+
+### Definition of function prototypes
 
 ```c
 int main(const int argc, char* argv[]);
@@ -113,36 +271,44 @@ static void end_ncurses(void);
 
 ### Detailed pseudo code
 
-## SERVER
+### main
+    Initialize the message module (without logging)
+    Check arguments
+    Command line provides address for the server
+    Initialize ncurses
+    Construct the PLAY [name] message
+    Send the PLAY [name] message to the server
+    Loop, waiting for input or for messages; provide callback functions
+    We use the 'arg' parameter to carry a pointer to 'server'
+    End ncurses session
+    Shut down the message module
+    Status code depends on result of message_loop
 
-Our server-side code is distributed across several files; `server.c`, `player.c`, `gold.c`, `gamemap.c`, and `emptyspaces.c`.
+### handleInput
+    arg is a pointer to the server's address
+    Translate the keypress to a server commanD
+    Construct the Move [key] message
+    Send the command to the server
 
-#### server.c
+### handleMessage
+    Clear the screen from the previous content
+    Print message to client
+    Refresh the screen to show the new content
 
+### init_ncurses
+    Start ncurses mode
+    Disable line buffering
+    Get F1, F2, etc...
+    Don't echo while we do getch
+    Non-blocking getch
+    Don't display a cursor
+    Start color functionality
+    Initialize a color pair
+    Apply color pair to window
 
+### end_ncurses
+    use endwin() to end ncurses
 
-
-
-#### `parseArgs`:
-
-	validate commandline
-	initialize message module
-	print assigned port number
-	decide whether spectator or player
-
----
-
-## XYZ module
-
-> For each module, repeat the same framework above.
-
-### Data structures
-
-### Definition of function prototypes
-
-### Detailed pseudo code
-
----
 
 ## Testing plan
 
