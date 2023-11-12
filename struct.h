@@ -1,10 +1,12 @@
+#ifndef STRUCT_H
+#define STRUCT_H
+
 #include "support/message.h"
 
 // Major Data Structures
 
 // Player structure
-typedef struct
-{
+typedef struct Player {
     char ID;             // unique identifier for the player
     char name[50];       // name of the player (up to 50 characters)
     int position[2];     // current position of the player on the game map (x, y)
@@ -43,10 +45,7 @@ typedef struct
     int port;             // port information for the game
 } GameMap;
 
-// static variable to assign unique IDs to players
-static int playerID = 0;
 
-// array of characters to assign IDs to players
-char characters[] = {
-    'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M',
-    'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'};
+
+
+#endif // STRUCT_H

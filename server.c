@@ -9,8 +9,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "support/message.h"
-#include "struct.h"
-#include "player.c"
+#include "player.h"
 #include "declaration.h"
 #include "gamemap.c"
 #include "gold.c"

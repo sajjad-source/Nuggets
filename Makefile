@@ -3,7 +3,7 @@
 # Date: Nov 8, 2023
 # Description: makefile for client and server
 
-OBJS_server = server.o 
+OBJS_server = server.o player.o
 OBJS_client = client.o
 LIBS = ./support/support.a
 	
@@ -26,6 +26,7 @@ server:$(OBJS_server)
 
 client.o: client.c ./support/message.c ./support/log.c 
 server.o: server.c ./support/message.h ./support/log.h 
+player.o: player.h player.c struct.h ./support/message.h ./support/log.h
 
 clean:
 	rm -rf *.dSYM  # MacOS debugger info
@@ -34,5 +35,3 @@ clean:
 	rm -f client
 	$(MAKE) -C ./support
 
-
-# mygcc client.c ./support/message.c ./support/log.c -o client -lncurses
