@@ -14,7 +14,6 @@ We do not describe the `support` library nor the modules that enable features th
 - **`Sajjad (Developer 2)`**: Manages the Client logic, display functions, and user interactions.
 - **`Kasuti (Developer 3)`**: Oversees network communication, protocol implementation, and error handling.
 
-## SERVER
 
 ## Program stucture
 The program is structured into several functions and components, each responsible for specific tasks.

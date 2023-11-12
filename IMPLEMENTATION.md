@@ -8,9 +8,9 @@ CS50 `Nuggets` is a multiplayer online game where players explore a virtual worl
 
 
 ## Plan for division of labor
-- **Jack (Developer 1)**: Focuses on the `Server` logic, `game initialization`, and `map handling`.
-- **Sajjad (Developer 2)**: Manages the `Client` logic, `display functions`, and `user interactions`.
-- **Kasuti (Developer 3)**: Oversees `network communication`, `error handling` and `documentation`.
+- **`Jack (Developer 1)`**: Focuses on the `Server` logic, `game initialization`, and `map handling`.
+- **`Sajjad (Developer 2)`**: Manages the `Client` logic, `display functions`, and `user interactions`.
+- **`Kasuti (Developer 3)`**: Oversees `network communication`, `error handling` and `documentation`.
 
 
 ### Data structures
