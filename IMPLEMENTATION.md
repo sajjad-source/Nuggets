@@ -2,26 +2,22 @@
 ## Implementation Spec
 ### Team 6, CS50, 2023
 
-> This **template** includes some gray text meant to explain how to use the template; delete all of them in your document!
 
-According to the [Requirements Spec](REQUIREMENTS.md), the Nuggets game requires two standalone programs: a client and a server.
-Our design also includes x, y, z modules.
-We describe each program and module separately.
-We do not describe the `support` library nor the modules that enable features that go beyond the spec.
-We avoid repeating information that is provided in the requirements spec.
+## OVERVIEW
+CS50 `Nuggets` is a multiplayer online game where players explore a virtual world, `collect gold`, and `interact` with each other. The game consists of a `server` and `client` component. The server manages the game state, while the client allows players to interact with the game world.
+
 
 ## Plan for division of labor
-
-
-
+- **Jack (Developer 1)**: Focuses on the `Server` logic, `game initialization`, and `map handling`.
+- **Sajjad (Developer 2)**: Manages the `Client` logic, `display functions`, and `user interactions`.
+- **Kasuti (Developer 3)**: Oversees `network communication`, `error handling` and `documentation`.
 
 
 ### Data structures
-
 The game implementation utilizes several key data structures to manage players, gold piles, empty spaces, and the overall game map.
 
-### Player Structure
 
+### Player Structure
 The `Player` structure represents an individual player in the game. Each player has a unique identifier (`ID`), a `name` (up to 50 characters), a current position on the game map (`position`), the total amount of gold collected (`gold_count`), gold picked up during the last move (`gold_picked`), a visible grid representing the portion of the map the player can see (`visible_grid`), and address information (`from`). Additionally, there's an array of characters (`characters[]`) to assign unique IDs to players.
 
 ```c
@@ -101,7 +97,6 @@ void calculate_visibility(GameMap* game_map, Player* player);
 ```
 
 ### Detailed pseudo code
-
 Our server-side code is distributed across several files; `server.c`, `player.c`, `gold.c`, `gamemap.c`, and `emptyspaces.c`.
 
 #### server.c
@@ -313,20 +308,24 @@ static void end_ncurses(void);
 ## Testing plan
 
 ### unit testing
+- `Player Module`: Test player creation, movement, and gold collection.
+- `Gold Module`: Test gold distribution and collection.
+- `GameMap Module`: Test map initialization and visibility calculations.
+- `Server Module`: Test server initialization and message handling.
+- `Client Module`: Test client initialization and message handling.
 
-> How will you test each unit (module) before integrating them with a main program (client or server)?
 
 ### integration testing
+- `Server-Client Interaction`: Ensure the server and client communicate correctly.
+- `Gameplay Integration`: Test the interaction between different game modules during gameplay.
 
-> How will you test the complete main programs: the server, and for teams of 4, the client?
 
 ### system testing
 
-> For teams of 4: How will you test your client and server together?
-
----
+- `End-to-End Testing`: Simulate a complete game session with multiple players to ensure all components work together seamlessly.
 
 ## Limitations
 
-> Bulleted list of any limitations of your implementation.
-> This section may not be relevant when you first write your Implementation Plan, but could be relevant after completing the implementation.
+- The game currently supports up to `26 players` and `1 spectator`.
+- `Limited map size` based on the provided map file.
+- The client is currently implemented with `Ncurses`, limiting compatibility with certain environments.
