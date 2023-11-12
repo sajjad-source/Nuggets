@@ -4,6 +4,9 @@
  *  Description: h file for player.c
 */
 
+#ifndef PLAYER_H
+#define PLAYER_H
+
 #include "struct.h"
 #include "support/message.h"
 
@@ -92,3 +95,5 @@ void handle_player_move(GameMap *game_map, addr_t from, char *moveDirectionStr);
  * 
  */
 void handle_quit(GameMap* game_map, addr_t from);
+
+#endif // PLAYER_H

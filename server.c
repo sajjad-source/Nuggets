@@ -98,7 +98,7 @@ bool handleMessage(void* arg, const addr_t from, const char* buf) {
         char* command = strtok(message, " ");
 
         // handle 'join' command - player & spectator
-        if (command != NULL && strcmp(command, "PLAY") == 0) {
+        if (command != NULL && (strcmp(command, "PLAY") == 0 || strcmp(command, "SPECTATE") == 0)) {
             char* playerName = strtok(NULL, " ");
             if (playerName != NULL && strcmp(playerName, "Spectator") != 0) {
                 // client joins as a player

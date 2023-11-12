@@ -4,6 +4,9 @@
  *  Description: h file for gold.c
 */
 
+#ifndef GOLD_H
+#define GOLD_H
+
 #include "struct.h"
 
 /**************** distribute gold ****************/
@@ -27,3 +30,5 @@
  *  Update the game map's gold-related attributes
  */
 void distribute_gold(GameMap *game_map, int goldTotal, int goldMinNumPiles, int goldMaxNumPiles);
+
+#endif // GOLD_H

@@ -4,6 +4,9 @@
  *  Description: h file for emptyspaces.c
 */
 
+#ifndef EMPTYSPACES_H
+#define EMPTYSPACES_H
+
 #include "struct.h"
 
 /**************** find_empty_spaces ****************/
@@ -26,3 +29,5 @@
  *      Array of empty space coordinates
  */
 Empty* find_empty_spaces(char** grid, int row, int col, int* count);
+
+#endif // EMPTYSPACES_H

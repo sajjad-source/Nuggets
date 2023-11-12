@@ -76,9 +76,7 @@ typedef struct
 ### Definition of function prototypes
 
 ## SERVER
-
-We declared all the functions in declaration.h
-
+## 1.server.c
 ```c
 int main(int argc, char* argv[]);
 bool handleMessage(void *arg, const addr_t from, const char *buf);

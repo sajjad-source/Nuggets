@@ -4,6 +4,9 @@
  *  Description: h file for gamemap.c
 */
 
+#ifndef GAMEMAP_H
+#define GAMEMAP_H
+
 #include "struct.h"
 
 /**************** initialize_game ****************/
@@ -113,3 +116,4 @@ bool line_of_sight(GameMap *game_map, int player_row, int player_col, int target
  */
 void calculate_visibility(GameMap* game_map, Player* player);
 
+#endif // GAMEMAP_H

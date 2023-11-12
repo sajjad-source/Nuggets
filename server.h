@@ -4,9 +4,11 @@
  *  Description: h file for server.h
 */
 
+#ifndef SERVER_H
+#define SERVER_H
+
 #include "struct.h"
 
-/*==================== server.c ====================*/
 /**************** handleMessage ****************/
 /**
  * Caller provides:
@@ -43,3 +45,5 @@ bool handleMessage(void *arg, const addr_t from, const char *buf);
  *
  */
 void game_over(GameMap *game_map);
+
+#endif //SERVER_H

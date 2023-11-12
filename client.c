@@ -10,14 +10,9 @@
 #include <string.h>
 #include "support/message.h"
 #include <ncurses.h>
+#include "client.h"
 
-/**************** file-local functions ****************/
-static bool handleInput(void* arg);
-static bool handleMessage(void* arg, const addr_t from, const char* message);
-static void init_ncurses(void);
-static void end_ncurses(void);
-
-/***************** main *******************************/
+// main
 int main(const int argc, char* argv[]) {
     // initialize the message module (without logging)
     if (message_init(NULL) == 0) {
@@ -44,7 +39,8 @@ int main(const int argc, char* argv[]) {
     char playMsg[message_MaxBytes];
 
     if (argc == 3) {
-        snprintf(playMsg, sizeof(playMsg), "PLAY %s", "Spectator");
+        snprintf(playMsg, sizeof(playMsg), "SPECTATE");
+        
     } else {
         snprintf(playMsg, sizeof(playMsg), "PLAY %s", argv[3]);
     }
@@ -66,7 +62,7 @@ int main(const int argc, char* argv[]) {
 }
 
 
-/**************** handleInput ****************/
+// handleInput
 static bool handleInput(void* arg) {
     // arg is a pointer to the server's address
     addr_t* server = (addr_t*)arg;
@@ -95,17 +91,8 @@ static bool handleInput(void* arg) {
     return false;
 }
 
-/*
-Clear the screen from the previous content
-Print message to client
-Refresh the screen to show the new content
-
-*/
-/**************** handleMessage ****************/
+// handle message
 static bool handleMessage(void* arg, const addr_t from, const char* message) {
-
-
-    printf("TEST");
     // Clear the screen from the previous content
     clear();
 
@@ -117,7 +104,7 @@ static bool handleMessage(void* arg, const addr_t from, const char* message) {
     return false;
 }
 
-/**************** init_ncurses ****************/
+// init_ncurses
 static void init_ncurses(void) {
     initscr();               // Start ncurses mode
     cbreak();                // Line buffering disabled
