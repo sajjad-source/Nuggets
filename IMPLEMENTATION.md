@@ -81,12 +81,28 @@ typedef struct
 int main(int argc, char* argv[]);
 bool handleMessage(void *arg, const addr_t from, const char *buf);
 void game_over(GameMap *game_map);
+```
+
+## 2.player.c
+```c
 void handle_player_join(GameMap *game_map, addr_t from, char *buf);
 void collect_gold(Player* player, int newRow, int newCol, GameMap* game_map);
 void handle_player_move(GameMap *game_map, addr_t from, char *moveDirectionStr);
 void handle_quit(GameMap* game_map, addr_t from);
+```
+
+## 3.emptyspaces.c
+```c
 Empty* find_empty_spaces(char** grid, int row, int col, int* count);
+```
+
+## 4.gold.c
+```c
 void distribute_gold(GameMap *game_map, int goldTotal, int goldMinNumPiles, int goldMaxNumPiles);
+```
+
+## 5.gamemap.c
+```c
 GameMap *initialize_game(const char *map_filename, int seed);
 char *serialize_map_with_players(GameMap *gameMap, addr_t from);
 bool is_clear_path(GameMap* game_map, int start_x, int start_y, int end_x, int end_y);
@@ -94,10 +110,11 @@ bool line_of_sight(GameMap *game_map, int player_row, int player_col, int target
 void calculate_visibility(GameMap* game_map, Player* player);
 ```
 
-### Detailed pseudo code
-Our server-side code is distributed across several files; `server.c`, `player.c`, `gold.c`, `gamemap.c`, and `emptyspaces.c`.
 
-#### server.c
+### Detailed pseudo code
+Our server-side code is distributed across several files; `server.h`, `player.h`, `gold.h`, `gamemap.h`, and `emptyspaces.h`.
+
+#### 1.server.h
 
 ### handleMessage
     Initialize game
@@ -118,7 +135,7 @@ Our server-side code is distributed across several files; `server.c`, `player.c`
         Iterate through players and append their information to the game over message
         Send the game over message to all players
 
-#### player.c
+#### 2.player.h
 
 ### handle_player_join
     Check if the player already exists by matching the 'from' address
@@ -168,7 +185,7 @@ Our server-side code is distributed across several files; `server.c`, `player.c`
         send the quit message to player / spectator
 
 
-### emptyspaces.c
+### 3.emptyspaces.h
 
 ### find_empty_spaces
     Allocate memory for an array to store empty space coordinates
@@ -180,7 +197,7 @@ Our server-side code is distributed across several files; `server.c`, `player.c`
             Shrink the array to the number of empty spaces found
     return an array of empty space coordinates
 
-### gold.c
+### 4.gold.h
 
 ### distribute_gold
     Calculate map area
@@ -195,7 +212,7 @@ Our server-side code is distributed across several files; `server.c`, `player.c`
         Place gold piles on the map
         Update the game map's gold-related attributes
 
-### gamemap.c
+### 5.gamemap.h
 
 ### initialize_game
     Seed the random number generator
@@ -264,6 +281,7 @@ static void end_ncurses(void);
 
 ### Detailed pseudo code
 
+## client.h
 ### main
     Initialize the message module (without logging)
     Check arguments
@@ -301,7 +319,6 @@ static void end_ncurses(void);
 
 ### end_ncurses
     use endwin() to end ncurses
-
 
 ## Testing plan
 
