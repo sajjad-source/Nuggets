@@ -54,23 +54,26 @@ int main(int argc, char* argv[]) {
 
     free(game_map->emptySpaces);
 
-
     free(game_map->gold_piles);
-
-
+    
     for (int j = 0; j < 27; j++) {
         if (game_map->players[j] != NULL) {
+            for (int i = 0; i < game_map->mapSizeC; i++) {
+                free(game_map->players[j]->visible_grid[i]);
+            }
+
+            free(game_map->players[j]->visible_grid);
             free(game_map->players[j]);
         }
     }
-    
+
     for (int j = 0; j < game_map->mapSizeC; j++) {
         free(game_map->grid[j]);
     }
+
     free(game_map->grid);
-
     free(game_map);
-
+    
     return 0;
 }
 
