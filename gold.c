@@ -4,7 +4,11 @@
  *  Description: C program that handles gold pile
  */
 
-// View declaration.h for more details
+#include <stdlib.h>
+#include "gold.h"
+#include "gamemap.h"
+
+// View gold.h for more details
 
 
 // distributes gold piles on the game map

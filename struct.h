@@ -1,9 +1,14 @@
+/** struct.h
+ *  Team 6
+ *  Date: Nov 8, 2023
+ *  Description: h file for all the data structures used
+*/
+
 #ifndef STRUCT_H
 #define STRUCT_H
 
 #include "support/message.h"
 
-// Major Data Structures
 
 // Player structure
 typedef struct Player {
@@ -44,8 +49,5 @@ typedef struct
     int goldLeft;         // total amount of gold left on the map
     int port;             // port information for the game
 } GameMap;
-
-
-
 
 #endif // STRUCT_H

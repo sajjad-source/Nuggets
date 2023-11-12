@@ -4,12 +4,13 @@
  *  Description: C program that handles player
  */
 
-// View declaration.h for more details
 #include <string.h>
 #include <stdlib.h>
 #include "message.h"
 #include "player.h"
-#include "declaration.h"
+#include "gamemap.h"
+
+// View player.h for more details
 
 // static variable to assign unique IDs to players
 static int playerID = 0;

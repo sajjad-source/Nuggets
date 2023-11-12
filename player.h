@@ -1,4 +1,8 @@
-
+/** player.h
+ *  Team 6
+ *  Date: Nov 8, 2023
+ *  Description: h file for player.c
+*/
 
 #include "struct.h"
 #include "support/message.h"

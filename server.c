@@ -2,19 +2,21 @@
  *  Team 6
  *  Date: Nov 8, 2023
  *  Description: C program that implements the server side of a multiplayer game [nugget].
- */
+*/
 
 #define _GNU_SOURCE
+#include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include "support/message.h"
 #include "player.h"
-#include "declaration.h"
-#include "gamemap.c"
-#include "gold.c"
+#include "emptyspaces.h"
+#include "server.h"
+#include "gold.h"
+#include "gamemap.h"
 
-// Declared the functions in declaration.h
+// Declared the functions in server.h
 
 int main(int argc, char* argv[]) {
 

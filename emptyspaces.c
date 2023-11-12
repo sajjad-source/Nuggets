@@ -1,10 +1,14 @@
-/** player.c
+/** emptyspaces.c
  *  Team 6
  *  Date: Nov 8, 2023
  *  Description: C program that handles empty spaces on the map
- */
+*/
 
-// View declaration.h for more details
+#include <stdlib.h>
+#include <string.h>
+#include "emptyspaces.h"
+
+// View emptyspaces.h for more details
 
 // finds and returns the coordinates of empty spaces in the grid
 Empty* find_empty_spaces(char** grid, int col, int row, int* count) {
