@@ -1,17 +1,20 @@
-/** gold.c
- *  Team 6
- *  Date: Nov 8, 2023
- *  Description: C program that handles gold pile
+/** 
+ * gold.c
+ * Team 6
+ * Date: Nov 8, 2023
+ * Description: This file manages the distribution and handling of gold piles within the 'Nugget' multiplayer game. It encompasses 
+ * the logic for randomly distributing gold piles across the game map based on the total amount of gold, minimum and maximum number 
+ * of piles, and the size of the game map. It also handles the random placement of these gold piles on the map, 
+ * ensuring they are placed on empty spaces. This module plays a crucial role in the game's resource allocation, adding an element of 
+ * strategy and unpredictability to the gameplay.
  */
 
 #include <stdlib.h>
 #include "gold.h"
 #include "gamemap.h"
 
-// View gold.h for more details
-
-
-// distributes gold piles on the game map
+/**************** distribute_gold() ****************/
+/* see gold.h for description */
 void distribute_gold(GameMap* game_map, int goldTotal, int goldMinNumPiles, int goldMaxNumPiles) {
     // calculate map area
     int mapArea = game_map->mapSizeR * game_map->mapSizeC;
