@@ -124,6 +124,10 @@ void handle_player_join(GameMap* game_map, addr_t from, char* player_name) {
                 break; // gold pile found and processed, break out of the loop
             }
         }
+
+        printf("OK %c\n", player->ID);
+        printf("GOLD %d %d %d\n", player->gold_count, player->gold_count, game_map->goldLeft);
+
         playerID++; // increment the playerID for the next player
 
     } else {
@@ -137,6 +141,8 @@ void collect_gold(Player* player, int newRow, int newCol, GameMap* game_map) {
     // if the new position is a gold pile, update the gold count and remove the pile
     for (int i = 0; i < game_map->numGoldPiles; i++) {
         if (game_map->gold_piles[i].position[0] == newCol && game_map->gold_piles[i].position[1] == newRow) {
+
+            int temp = game_map->gold_piles[i].gold_count;
             // increase player's gold count and the amount of gold picked up
             player->gold_count += game_map->gold_piles[i].gold_count;
             player->gold_picked += game_map->gold_piles[i].gold_count;
@@ -153,7 +159,9 @@ void collect_gold(Player* player, int newRow, int newCol, GameMap* game_map) {
             game_map->numGoldPiles--;
 
             // print a message indicating that the player collected gold
-            printf("Player %c collected gold at position (%d, %d)\n", player->ID, newCol, newRow);
+            // printf("Player %c collected gold at position (%d, %d)\n", player->ID, newCol, newRow);
+
+            printf("GOLD %d %d %d\n", temp, player->gold_count, game_map->goldLeft);
 
             break; // exit the loop after handling the gold pile
         }

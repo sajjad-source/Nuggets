@@ -19,7 +19,7 @@
 // initializes the game map based on the provided map file and seed.
 GameMap *initialize_game(const char *map_filename, int seed)
 {
-    // seed the random number generator
+    // Seed the random number generator
     if (seed == -1) {
         srand(getpid());
     } else {
@@ -51,8 +51,6 @@ GameMap *initialize_game(const char *map_filename, int seed)
             col++;
         }
     }
-
-    printf("Row: %d, Col: %d", row, col);
 
     // rewind to the start of the file to read the grid
     rewind(fp);
@@ -99,18 +97,18 @@ GameMap *initialize_game(const char *map_filename, int seed)
     }
 
     // read the map from the file
-    char lineBuffer[row + 2]; // +2 for newline and null terminator
+    char lineBuffer[row + 2];                               // +2 for newline and null terminator
     for (int i = 0; i < col && fgets(lineBuffer, sizeof(lineBuffer), fp) != NULL; i++)
     {
         if (i == col - 1)
         {
             strncpy(gameMap->grid[i], lineBuffer, row + 1);
-            gameMap->grid[i][row] = '\0'; // ensure null termination
+            gameMap->grid[i][row] = '\0';                   // ensure null termination
             break;
         }
         strncpy(gameMap->grid[i], lineBuffer, row + 2);
-        gameMap->grid[i][row] = '\n';     // ensure null termination
-        gameMap->grid[i][row + 1] = '\0'; // ensure null termination
+        gameMap->grid[i][row] = '\n';                       // ensure null termination
+        gameMap->grid[i][row + 1] = '\0';                   // ensure null termination
     }
 
     // find empty spaces after loading the map
@@ -147,7 +145,7 @@ char* serialize_map_with_players(GameMap *gameMap, addr_t from) {
     // Create a copy of the map
     char** tempMap = malloc(gameMap->mapSizeC * sizeof(char*));
     for (int i = 0; i < gameMap->mapSizeC; i++) {
-        tempMap[i] = strdup(gameMap->grid[i]); // Copy each row
+        tempMap[i] = strdup(gameMap->grid[i]);                                      // Copy each row
         if (tempMap[i] == NULL) {
             // Handle allocation failure; free previously allocated strings and the array, then return NULL
             for (int j = 0; j < i; j++) {
@@ -165,12 +163,12 @@ char* serialize_map_with_players(GameMap *gameMap, addr_t from) {
         if (gameMap->players[i] != NULL && message_eqAddr(gameMap->players[i]->from, from))
         {
             current_player = gameMap->players[i];
-            calculate_visibility(gameMap, current_player); // Calculate visibility for the current player
+            calculate_visibility(gameMap, current_player);                          // Calculate visibility for the current player
             break;
         }
     }
 
-    char* playerInfo = malloc(bufferSize); // Assuming this is enough space for the player info
+    char* playerInfo = malloc(bufferSize);                                          // Assuming this is enough space for the player info
 
     // Overlay players' positions on the temporary map
     for (int i = 0; i < 26; i++) {
@@ -182,7 +180,7 @@ char* serialize_map_with_players(GameMap *gameMap, addr_t from) {
                 if (!message_eqAddr(player->from, from)) {
                     tempMap[player->position[1]][player->position[0]] = player->ID; // Use the player's ID as the character
                 } else {
-                    tempMap[player->position[1]][player->position[0]] = '@'; // Use the player's ID as the character
+                    tempMap[player->position[1]][player->position[0]] = '@';        // Use the player's ID as the character
                     if (player->gold_picked > 0) {
                         snprintf(playerInfo, bufferSize, "Player %c has %d nuggets (%d nuggets unclaimed). Gold received: %d\n",
                         player->ID, player->gold_count, gameMap->goldLeft, player->gold_picked);
@@ -222,10 +220,10 @@ char* serialize_map_with_players(GameMap *gameMap, addr_t from) {
 
     if (gameMap->players[26] != NULL && message_eqAddr(from, gameMap->players[26]->from)) {
         for (int i = 0; i < gameMap->mapSizeC; i++) {
-            strncpy(p, tempMap[i], gameMap->mapSizeR + 1); // Copy each row including the newline
-            p += gameMap->mapSizeR + 1; // Move the pointer by the size of the row plus newline
+            strncpy(p, tempMap[i], gameMap->mapSizeR + 1);                          // Copy each row including the newline
+            p += gameMap->mapSizeR + 1;                                             // Move the pointer by the size of the row plus newline
         }
-        *p = '\0'; // Null-terminate the buffer
+        *p = '\0';                                                                  // Null-terminate the buffer
     } else {
         for (int y = 0; y < gameMap->mapSizeC; y++)
         {
@@ -233,18 +231,18 @@ char* serialize_map_with_players(GameMap *gameMap, addr_t from) {
             {
                 if (current_player != NULL && current_player->visible_grid[y][x] != ' ')
                 {
-                    p[x] = tempMap[y][x]; // Place visible character from tempMap
+                    p[x] = tempMap[y][x];                                           // Place visible character from tempMap
                 }
                 else
                 {
-                p[x] = ' '; // If not visible, place a space
+                p[x] = ' ';                                                         // If not visible, place a space
                 }
             }   
-            p += gameMap->mapSizeR; // Move the pointer by the size of the row
-            *p = '\n';             // Add newline at the end of each row
-            p++;                   // Move past the newline
+            p += gameMap->mapSizeR;                                                 // Move the pointer by the size of the row
+            *p = '\n';                                                              // Add newline at the end of each row
+            p++;                                                                    // Move past the newline
         }
-        *p = '\0'; // Null-terminate the buffer
+        *p = '\0';                                                                  // Null-terminate the buffer
     }
 
 
@@ -258,17 +256,17 @@ char* serialize_map_with_players(GameMap *gameMap, addr_t from) {
 
     free(buffer);
 
-    return playerInfo; // Return the serialized buffer
+    return playerInfo;                                                              // Return the serialized buffer
 }
 
-// Visibility
+// Determine if there is clear path using Bresenham's Line Algorithm
 bool is_clear_path(GameMap *game_map, int start_x, int start_y, int end_x, int end_y)
 {
     float delta_x = abs(end_x - start_x);
     float delta_y = -abs(end_y - start_y);
     float step_x = start_x < end_x ? 1 : -1;
     float step_y = start_y < end_y ? 1 : -1;
-    float error = delta_x + delta_y; // The error accumulator
+    float error = delta_x + delta_y;                                                // The error accumulator
 
     while (true)
     {
@@ -279,27 +277,27 @@ bool is_clear_path(GameMap *game_map, int start_x, int start_y, int end_x, int e
             char current_pos = game_map->grid[start_y][start_x];
             if (current_pos == '-' || current_pos == '|' || current_pos == '+')
             {
-                return true; // The wall is visible
+                return true;                                                        // The wall is visible
             }
-            break; // Reached the target, end the loop
+            break;                                                                  // Reached the target, end the loop
         }
 
         // Check if the current position is a clear path
         if (game_map->grid[start_y][start_x] != '.' && game_map->grid[start_y][start_x] != ' ')
         {
-            return false; // It's not a clear path
+            return false;                                                           // It's not a clear path
         }
 
         int error2 = 2 * error;
         if (error2 >= delta_y)
         {
-            error += delta_y;  // Adjust the error
-            start_x += step_x; // Take a step in x
+            error += delta_y;                                                       // Adjust the error
+            start_x += step_x;                                                      // Take a step in x
         }
         if (error2 <= delta_x)
         {
-            error += delta_x;  // Adjust the error
-            start_y += step_y; // Take a step in y
+            error += delta_x;                                                       // Adjust the error
+            start_y += step_y;                                                      // Take a step in y
         }
     }
 
@@ -415,8 +413,7 @@ void calculate_visibility(GameMap *game_map, Player *player)
                     if (!visible) break;
                 }
             }
-
-                        if (visible && currentCell == '+')
+            if (visible && currentCell == '+')
             {
                 for (int dy = -1; dy <= 1; dy++)
                 {
@@ -440,7 +437,7 @@ void calculate_visibility(GameMap *game_map, Player *player)
                     if (!visible) break;
                 }
             }
-                                    // Additional check to ensure no adjacent corners are visible
+            // Additional check to ensure no adjacent corners are visible
             if (visible && currentCell == '|')
             {
                 for (int dy = 0; dy <= 0; dy++)
@@ -488,7 +485,6 @@ void calculate_visibility(GameMap *game_map, Player *player)
             if (currentCell == '+' && (x+1 >= 0 && x+1 < game_map->mapSizeR) && player->visible_grid[y][x+1] == '-') {
                 visible = true;
             }
-
             if (currentCell == '+' && player->visible_grid[player->position[1]][player->position[0]] == '#') {
                 visible = false;
             }
