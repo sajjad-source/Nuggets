@@ -1,8 +1,13 @@
-/** client.c
- *  Team 6
- *  Date: Nov 8, 2023
- *  Description: C program that implements the client side of a multiplayer game [nugget].
-*/
+/** 
+ * client.c
+ * Team 6
+ * Date: Nov 8, 2023
+ * Description: This file is responsible for implementing the client-side logic of the 'Nugget' multiplayer game. It handles the 
+ * establishment of a connection to the game server, processes user inputs for game actions, and manages the display of the game state. 
+ * This includes interpreting server messages, rendering the game map and player statuses, and handling player commands. The client 
+ * utilizes the ncurses library for handling terminal-based input and output, providing a text-based interface for player interaction. 
+ * This module is crucial for enabling players to interact with the game world, providing a seamless and intuitive user experience.
+ */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -12,7 +17,6 @@
 #include <ncurses.h>
 #include "client.h"
 
-// main
 int main(const int argc, char* argv[]) {
     // initialize the message module (without logging)
     if (message_init(NULL) == 0) {
@@ -62,7 +66,8 @@ int main(const int argc, char* argv[]) {
 }
 
 
-// handleInput
+/**************** handleInput() ****************/
+/* see client.h for description */
 static bool handleInput(void* arg) {
     // arg is a pointer to the server's address
     addr_t* server = (addr_t*)arg;
@@ -91,7 +96,8 @@ static bool handleInput(void* arg) {
     return false;
 }
 
-// handle message
+/**************** handleMessage() ****************/
+/* see client.h for description */
 static bool handleMessage(void* arg, const addr_t from, const char* message) {
     // Clear the screen from the previous content
     clear();
@@ -104,7 +110,8 @@ static bool handleMessage(void* arg, const addr_t from, const char* message) {
     return false;
 }
 
-// init_ncurses
+/**************** init_curses() ****************/
+/* see client.h for description */
 static void init_ncurses(void) {
     initscr();               // Start ncurses mode
     cbreak();                // Line buffering disabled

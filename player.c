@@ -1,7 +1,11 @@
-/** player.c
- *  Team 6
- *  Date: Nov 8, 2023
- *  Description: C program that handles player
+/** 
+ * player.c
+ * Team 6
+ * Date: Nov 8, 2023
+ * Description: This file contains the implementation for player management in the multiplayer game 'Nugget'. It includes functionalities 
+ * for handling player joins, movements, and quits. The core functions manage player state, including their positions, gold collection, 
+ * and visibility on the game map. Players are uniquely identified and their actions, such as movement commands and gold collection, are 
+ * processed and reflected in the game state. The file also handles spectators joining the game, providing them a view-only access to the game state.
  */
 
 #include <string.h>
@@ -9,8 +13,6 @@
 #include "message.h"
 #include "player.h"
 #include "gamemap.h"
-
-// View player.h for more details
 
 // static variable to assign unique IDs to players
 static int playerID = 0;
@@ -20,7 +22,8 @@ char characters[] = {
     'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M',
     'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'};
 
-// handle player/ spectator join
+/**************** handle_player_join() ****************/
+/* see player.h for description */
 void handle_player_join(GameMap* game_map, addr_t from, char* player_name) {
 
     // check if the player already exists by matching the 'from' address
@@ -136,7 +139,8 @@ void handle_player_join(GameMap* game_map, addr_t from, char* player_name) {
     }
 }
 
-// function to handle collecting gold along the way
+/**************** collect_gold() ****************/
+/* see player.h for description */
 void collect_gold(Player* player, int newRow, int newCol, GameMap* game_map) {
     // if the new position is a gold pile, update the gold count and remove the pile
     for (int i = 0; i < game_map->numGoldPiles; i++) {
@@ -169,7 +173,8 @@ void collect_gold(Player* player, int newRow, int newCol, GameMap* game_map) {
 }
 
 
-// handles player's movement 
+/**************** handle_player_move() ****************/
+/* see player.h for description */
 void handle_player_move(GameMap* game_map, addr_t from, char* moveDirectionStr) {
     // extract move direction from buf
     char moveDirection = moveDirectionStr[0];
@@ -337,7 +342,8 @@ void handle_player_move(GameMap* game_map, addr_t from, char* moveDirectionStr) 
 }
 
 
-// handles the quitting of a player or spectator
+/**************** handle_quit() ****************/
+/* see player.h for description */
 void handle_quit(GameMap* game_map, addr_t from) {
     // find the player with the given ID
     Player* player = NULL;

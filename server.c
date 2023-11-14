@@ -1,8 +1,12 @@
-/** server.c
- *  Team 6
- *  Date: Nov 8, 2023
- *  Description: C program that implements the server side of a multiplayer game [nugget].
-*/
+/** 
+ * server.c
+ * Team 6
+ * Date: Nov 8, 2023
+ * Description: This server-side program for the multiplayer game 'Nugget' handles the core gameplay mechanics. It initializes the game state, 
+ * including the game map, players, and gold distribution. The server processes incoming messages from clients (players and spectators), 
+ * executes game logic (like player movement and gold collection), and broadcasts game state updates. It also handles the end-game 
+ * condition and cleanup of resources. The server uses a combination of custom structs and helper functions to manage the game state efficiently.
+ */
 
 #define _GNU_SOURCE
 #include <unistd.h>
@@ -15,8 +19,6 @@
 #include "server.h"
 #include "gold.h"
 #include "gamemap.h"
-
-// Declared the functions in server.h
 
 int main(int argc, char* argv[]) {
 
@@ -86,7 +88,8 @@ int main(int argc, char* argv[]) {
 }
 
 
-// handle message
+/**************** handleMessage() ****************/
+/* see server.h for description */
 bool handleMessage(void* arg, const addr_t from, const char* buf) {
     GameMap* game_map = (GameMap*)arg;
     char* message = strdup(buf); // duplicate the buffer to use with strtok
@@ -147,7 +150,8 @@ bool handleMessage(void* arg, const addr_t from, const char* buf) {
     return false; // continue the message loop
 }
 
-
+/**************** game_over() ****************/
+/* see server.h for description */
 void game_over(GameMap* game_map) {
     // declare a buffer for the game over message
     char gameOverMesg[10000];

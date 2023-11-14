@@ -1,8 +1,12 @@
-/** gamemap.c
- *  Team 6
- *  Date: Nov 8, 2023
- *  Description: C program that handles the game map
-*/
+/** 
+ * gamemap.c
+ * Team 6
+ * Date: Nov 8, 2023
+ * Description: This module is responsible for handling all aspects of the game map in the multiplayer game 'Nugget'. 
+ * It includes functions for initializing the game map from a file, handling the distribution of gold, calculating 
+ * player visibility, and serializing the map state to send to clients. It uses a GameMap structure to represent the 
+ * game's world, consisting of various elements like walls, empty spaces, and gold piles.
+ */
 
 #define _POSIX_C_SOURCE 200809L 
 #include <string.h>
@@ -14,9 +18,8 @@
 #include "player.h"
 #include "gold.h"
 
-// View gamemap.h for more details
-
-// initializes the game map based on the provided map file and seed.
+/**************** initialize_game() ****************/
+/* see gamemap.h for description */
 GameMap *initialize_game(const char *map_filename, int seed)
 {
     // Seed the random number generator
@@ -131,7 +134,8 @@ GameMap *initialize_game(const char *map_filename, int seed)
     return gameMap;
 }
 
-// serializes the game map with player information.
+/**************** serialize_map_with_players() ****************/
+/* see gamemap.h for description */
 char* serialize_map_with_players(GameMap *gameMap, addr_t from) {
     // calculate buffer size: one char for each cell plus one for each newline, plus one for the null terminator
     int bufferSize = gameMap->mapSizeC * (gameMap->mapSizeR + 1) + 100;
@@ -259,7 +263,8 @@ char* serialize_map_with_players(GameMap *gameMap, addr_t from) {
     return playerInfo;                                                              // Return the serialized buffer
 }
 
-// Determine if there is clear path using Bresenham's Line Algorithm
+/**************** is_clear_path() ****************/
+/* see gamemap.h for description */
 bool is_clear_path(GameMap *game_map, int start_x, int start_y, int end_x, int end_y)
 {
     float delta_x = abs(end_x - start_x);
@@ -317,6 +322,8 @@ bool line_of_sight(GameMap *game_map, int player_row, int player_col, int target
     return is_clear_path(game_map, player_row, player_col, target_row, target_col);
 }
 
+/**************** calculate_visibilty() ****************/
+/* see gamemap.h for description */
 void calculate_visibility(GameMap *game_map, Player *player)
 {
     // Check visibility for every cell in the grid

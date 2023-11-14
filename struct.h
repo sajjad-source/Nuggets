@@ -1,7 +1,7 @@
 /** struct.h
  *  Team 6
  *  Date: Nov 8, 2023
- *  Description: h file for all the data structures used in server
+ *  Description: Header file for all the data structures used in server
 */
 
 #ifndef STRUCT_H
