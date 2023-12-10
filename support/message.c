@@ -10,7 +10,6 @@
  * 
  * Compile with -DUNIT_TEST for a standalone unit test; see below.
  *
- * David Kotz - May 2019
  */
 
 #include <stdio.h>

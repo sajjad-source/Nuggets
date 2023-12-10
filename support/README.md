@@ -1,6 +1,6 @@
 # support library
 
-This library contains two modules useful in support of the CS50 final project.
+This library contains two useful modules
 
 ## 'log' module
 

@@ -1,10 +1,10 @@
-# CS50 Nuggets
+# Nuggets
 ## Implementation Spec
-### Team 6: Jack, Sajjad, Kasuti, CS50, Fall 2023
+### Team 6: Jack, Sajjad, Kasuti
 
 
 ## OVERVIEW
-CS50 `Nuggets` is a multiplayer online game where players explore a virtual world, `collect gold`, and `interact` with each other. The game consists of a `server` and `client` component. The server manages the game state, while the client allows players to interact with the game world.
+`Nuggets` is a multiplayer online game where players explore a virtual world, `collect gold`, and `interact` with each other. The game consists of a `server` and `client` component. The server manages the game state, while the client allows players to interact with the game world.
 
 
 ## Plan for division of labor

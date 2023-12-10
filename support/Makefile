@@ -1,8 +1,5 @@
 #
 # Makefile for 'support.a'
-# CS50 project 'Nuggets'
-#
-# David Kotz, May 2019, 2021
 #
 
 LIB = support.a

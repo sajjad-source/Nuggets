@@ -20,7 +20,6 @@
  *  handleInput may be NULL if no input expected.
  *  arg may be NULL if not needed by handlers.
  *
- * David Kotz - May 2019
  */
 
 #ifndef _MESSAGE_H_
