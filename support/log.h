@@ -16,7 +16,6 @@
  * its own logging fp and thus can independently control whether to log and
  * where to log.
  * 
- * David Kotz, May 2019
  */
 
 #ifndef _LOG_H_

@@ -1,6 +1,6 @@
-# CS50 Nuggets
+# Nuggets
 ## Design Implementation Spec
-### Team 6: Jack, Sajjad, Kasuti, CS50, Fall 2023
+### Team 6: Jack, Sajjad, Kasuti
 
 ## Introduction
 This document presents the design for the multiplayer exploration game "Nuggets". This game will allow multiple players to connect to a server, explore a map to collect gold nuggets, and compete to gather the most nuggets. Additionally, this game provides a spectator mode, allowing users to watch without direct interaction. Given the game's complexity and the interconnection of its various components, our design emphasizes breaking the system into manageable modules, structs, and features.

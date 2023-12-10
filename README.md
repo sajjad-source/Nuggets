@@ -1,9 +1,9 @@
-# CS50 Nuggets
+# Nuggets
 ## Design README.md
-### Team 6: Jack, Sajjad, Kasuti, CS50, Fall 2023
+### Team 6: Jack, Sajjad, Kasuti
 
 ## Overview
-This repository hosts the code for the CS50 "Nuggets" game, where players explore a set of rooms and passageways in search of gold nuggets. The game's map is defined and loaded by the server at the start. Gold nuggets are distributed randomly in piles within the rooms. Up to 26 players, along with one spectator, can participate in a game. Each player is dropped randomly into a room upon joining. Players move around, collecting nuggets when they move onto a pile. The game concludes when all gold nuggets are collected, and a summary is printed.
+This repository hosts the code for the "Nuggets" game, where players explore a set of rooms and passageways in search of gold nuggets. The game's map is defined and loaded by the server at the start. Gold nuggets are distributed randomly in piles within the rooms. Up to 26 players, along with one spectator, can participate in a game. Each player is dropped randomly into a room upon joining. Players move around, collecting nuggets when they move onto a pile. The game concludes when all gold nuggets are collected, and a summary is printed.
 
 ## Team Structure
 - **`Jack (Developer 1)`**: Focuses on the Server logic, game initialization, and map handling.

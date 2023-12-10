@@ -5,7 +5,6 @@
  * as a message to the server, and prints to stdout every message received
  * from the server; each printed message is surrounded by 'quotes'.
  * 
- * David Kotz - May 2021
  */
 
 #include <stdio.h>

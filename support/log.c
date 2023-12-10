@@ -1,7 +1,6 @@
 /* 
  * log module - a simple way to log messages to a file
  * 
- * David Kotz, May 2019
  */
 
 #include <stdio.h>
